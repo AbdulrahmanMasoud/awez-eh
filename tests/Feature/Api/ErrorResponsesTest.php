@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domains\Identity\Models\User;
 use App\Exceptions\DomainException;
-use App\Models\User;
 use App\Support\PhoneNumber;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;

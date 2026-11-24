@@ -5,7 +5,8 @@ declare(strict_types=1);
 return [
 
     /*
-    | Times are stored and computed in UTC (app.timezone). Presentation code converts to this zone.
+    | Times are stored and computed in UTC (app.timezone). Presentation code converts to this zone,
+    | and places' opening hours are wall-clock times in it.
     */
     'display_timezone' => 'Africa/Cairo',
 

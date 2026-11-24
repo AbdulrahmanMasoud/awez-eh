@@ -62,11 +62,11 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 ## 5. Content lifecycle
 
-`draft → pending_review → published → (paused | sold/rented | rejected | archived)`. Transitions are Actions in the owning domain; each writes an activity log entry. Only `published` rows are visible in public endpoints.
+`draft → pending_review → published → (paused | sold/rented | rejected | archived)`. Transitions are Actions in the owning domain; each writes an activity log entry. Only `published` rows are visible in public endpoints. Properties, providers, places and used items are moderated this way; requests are public as soon as they are written, while open and not expired, and reports handle abuse.
 
 ## 6. Search and location
 
-- Text search goes through Scout with the database driver, on columns normalized by `ArabicNormalizer`, backed by `pg_trgm` GIN indexes for typo tolerance.
+- Text search goes through Scout with the database driver, on a `search_text` column per searchable table, normalized by `ArabicNormalizer` (`HasSearchText`), backed by a `pg_trgm` GIN index for typo tolerance. A term is compared with the text's words (`strict_word_similarity`), not with the whole text (DECISIONS 38 and 39).
 - Maps in the app use MapLibre with OpenStreetMap tiles from OpenFreeMap; residents pick a location by dropping a pin, so no paid geocoding is needed (ADR 0005).
 - Locations are `geography(Point, 4326)` with GiST indexes. "Near me" and urgent dispatch use `ST_DWithin` and order by `ST_Distance`.
 

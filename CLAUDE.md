@@ -48,7 +48,7 @@ Never say a step works without having run it.
 1. **Ownership.** There are no tenants. Every row a user creates (a listing, a request, a reply, a booking, a message) has an owner column, and every read or write of someone else's row goes through a Policy. A feature test proves that user A cannot read private data of, update or delete user B's rows through the API. Cross-user access exists only in Filament, behind admin roles (ADR 0002).
 2. **The platform's commission is protected.** An owner's phone number is never returned by the API for listings the platform brokers (`brokered = true`). Every chat opened and every viewing booked on such a listing creates a `leads` row in the same transaction. Lead rows are never updated or deleted; corrections are new rows.
 3. **Money is never a float.** Use `Brick\Money\Money`, stored as `bigint` minor units (piasters) with a `currency` column, via `App\Support\Casts\MoneyCast`.
-4. **Time is UTC** in storage and code (`CarbonImmutable`). Convert to Africa/Cairo only in presentation.
+4. **Time is UTC** in storage and code (`CarbonImmutable`). Convert to Africa/Cairo only in presentation. One exception: places' opening hours are Cairo wall-clock times (`OpeningHoursCalculator`, DECISIONS 40).
 5. **Locations are PostGIS.** Points are `geography(Point, 4326)`. Distances and "near me" are computed in the database (`ST_DWithin`, `ST_Distance`), never in PHP loops.
 6. **Arabic text is normalized** before it is stored for search and before it is searched (`App\Support\Text\ArabicNormalizer`: alef forms, taa marbuta, alef maqsura, diacritics, tatweel). Search goes through Laravel Scout, so the engine can change from the database driver to Meilisearch by configuration.
 7. **Jobs are idempotent** and receive ids, not models or payload blobs. Running a job twice must not send a push notification or a WhatsApp message twice.
@@ -87,7 +87,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 **Actions.** `final`, constructor-injected dependencies, one public `handle(...)` with typed parameters and return. Multi-row writes in `DB::transaction()`. Events with side effects implement `ShouldDispatchAfterCommit`. Named verb + noun: `PublishProperty`, `BookViewing`, `ReplyToRequest`.
 
-**Models.** Relationships, casts (`casts()` method), scopes, small accessors. No workflows. `$fillable` explicit. `Model::shouldBeStrict()` outside production. Status and type columns are backed enums. Primary keys are UUID v7.
+**Models.** Relationships, casts (`casts()` method), scopes, small accessors. No workflows. `$fillable` explicit. `Model::shouldBeStrict()` outside production. Status and type columns are backed enums, stored as strings with a `CHECK` listing their values. Primary keys are UUID v7. A model in `App\Domains\<Domain>\Models` names its factory with `#[UseFactory]` and its policy with `#[UsePolicy]`. Relationships are declared on both sides of every foreign key. The morph map is enforced (`AppServiceProvider`): a model stored in a polymorphic column needs a short name there. Locations use `PointCast` and `HasLocation`; searchable text uses `HasSearchText`; reference data names use `HasTranslatedName`.
 
 **Data objects.** Inputs and outputs crossing a boundary are `spatie/laravel-data` classes, `final readonly` where possible.
 
@@ -129,7 +129,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 - Feature tests use the real PostgreSQL from Docker with PostGIS. Never SQLite.
 - API tests see the default locale (Arabic) unless they send `Accept-Language`.
 - `Http::preventStrayRequests()` is on for all tests. Google, Apple, WhatsApp, FCM and storage are faked.
-- Use factories, never hand-built rows. A bug fix starts with a failing test.
+- Use factories, never hand-built rows. Moderated content from a factory is pending review, as new content is: use `published()` for public rows. A bug fix starts with a failing test.
 - Run the tests after formatting, not only before.
 - Coverage: `--min=85` for `app/Domains`. Mutation testing for money, commissions and booking state machines.
 
@@ -143,6 +143,10 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 - Jobs implement `ShouldQueue`.
 - Form Requests are final and extend `FormRequest`.
 - `App\Support` does not depend on `App\Domains`, `App\Http` or `App\Filament`.
+- Models live only in `App\Domains\*\Models`, are final, use `HasUuids` and declare their fillable attributes.
+- Every model whose table has a `user_id` has a policy.
+
+Feature tests in `tests/Feature/Database` read the schema: an index behind every foreign key, GiST on every geography column, GIN trigram on every `search_text`, enum `CHECK`s that match the PHP enums, the delete rule of every foreign key, and relationships on both sides of every foreign key.
 
 ## Git
 
