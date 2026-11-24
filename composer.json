@@ -1,0 +1,110 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "taqnihub/awez-eh",
+    "type": "project",
+    "description": "Awez Eh: the backend of a city app for Sadat City, Egypt (JSON API and admin panel).",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.5",
+        "laravel/framework": "^13.43",
+        "laravel/sanctum": "^4.5",
+        "laravel/tinker": "^3.0"
+    },
+    "require-dev": {
+        "driftingly/rector-laravel": "^2.7",
+        "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.15",
+        "laravel/boost": "^2.10",
+        "laravel/pail": "^1.2.5",
+        "laravel/pao": "^1.0.6",
+        "laravel/pint": "^1.27",
+        "laravel/sail": "^1.71",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
+        "pestphp/pest": "^5.3",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "rector/rector": "^2.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "setup": [
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php artisan migrate --seed --force",
+            "@putenv DB_DATABASE=testing",
+            "@php artisan migrate --force"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan dev"
+        ],
+        "lint": [
+            "pint --parallel"
+        ],
+        "lint:check": [
+            "pint --parallel --test"
+        ],
+        "rector": [
+            "rector process"
+        ],
+        "rector:check": [
+            "rector process --dry-run --clear-cache"
+        ],
+        "analyse": [
+            "phpstan analyse"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi @no_additional_args",
+            "pest --parallel --testsuite=Unit,Feature,Arch"
+        ],
+        "check": [
+            "Composer\\Config::disableProcessTimeout",
+            "@lint:check",
+            "@rector:check",
+            "@analyse",
+            "@test"
+        ],
+        "fmt": [
+            "@rector",
+            "@lint"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
