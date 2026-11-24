@@ -50,7 +50,7 @@ Never say a step works without having run it.
 4. **Time is UTC** in storage and code (`CarbonImmutable`). Convert to Africa/Cairo only in presentation.
 5. **Locations are PostGIS.** Points are `geography(Point, 4326)`. Distances and "near me" are computed in the database (`ST_DWithin`, `ST_Distance`), never in PHP loops.
 6. **Arabic text is normalized** before it is stored for search and before it is searched (`App\Support\Text\ArabicNormalizer`: alef forms, taa marbuta, alef maqsura, diacritics, tatweel). Search goes through Laravel Scout, so the engine can change from the database driver to Meilisearch by configuration.
-7. **Jobs are idempotent** and receive ids, not models or payload blobs. Running a job twice must not send an SMS or a push notification twice.
+7. **Jobs are idempotent** and receive ids, not models or payload blobs. Running a job twice must not send a push notification or a WhatsApp message twice.
 8. **Secrets.** `env()` is called only in `config/*.php`. Never log tokens, OTP codes, or full phone numbers: hold numbers in `App\Support\PhoneNumber` (its string form is masked; `e164()` only where the real number is needed).
 9. **Content is moderated.** A new listing, provider profile or place starts as `pending_review` and is visible in the public API only once an admin approves it. Status transitions go through an Action, never a direct update.
 10. **The API is versioned and stable.** Routes live under `/api/v1`. Responses are API Resources; errors use one JSON shape (`message`, `code`, `errors`). A breaking change needs a new version.
@@ -94,7 +94,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 **Jobs.** `final`, implement `ShouldQueue`, take ids, declare `$tries`, `backoff()`, `timeout` and `failed()`. Use `ShouldBeUnique`, `WithoutOverlapping` and `RateLimited` where they apply.
 
-**Notifications.** Laravel Notifications with the `database` channel plus `fcm` (`laravel-notification-channels/fcm`) and SMS where needed. Device tokens live in `device_tokens`; a token FCM reports as invalid is deleted.
+**Notifications.** Laravel Notifications with the `database` channel plus `fcm` (`laravel-notification-channels/fcm`). No paid SMS (ADR 0003). Device tokens live in `device_tokens`; a token FCM reports as invalid is deleted.
 
 **Queries.** Eager-load what you use; select only needed columns on large tables; `lazyById()` / `chunkById()` for big sets. Every foreign key and every filter or sort column has an index in the same migration (GiST for geography, GIN trigram for searched text).
 
@@ -126,7 +126,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 - **Pest 5.** `tests/Unit` (pure), `tests/Feature` (HTTP, jobs, DB), `tests/Arch` (rules).
 - Feature tests use the real PostgreSQL from Docker with PostGIS. Never SQLite.
-- `Http::preventStrayRequests()` is on for all tests. SMS, FCM and storage are faked.
+- `Http::preventStrayRequests()` is on for all tests. Google, Apple, WhatsApp, FCM and storage are faked.
 - Use factories, never hand-built rows. A bug fix starts with a failing test.
 - Run the tests after formatting, not only before.
 - Coverage: `--min=85` for `app/Domains`. Mutation testing for money, commissions and booking state machines.
