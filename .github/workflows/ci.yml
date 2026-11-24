@@ -1,7 +1,10 @@
 name: ci
 
+# Pushes to main and pull requests only: a branch with a pull request is checked by the pull
+# request's run, not twice (the owner's decision, DECISIONS.md).
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
