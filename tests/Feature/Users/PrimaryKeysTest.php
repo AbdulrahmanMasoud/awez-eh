@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Illuminate\Support\Str;
 
 it('gives users UUID v7 primary keys', function (): void {

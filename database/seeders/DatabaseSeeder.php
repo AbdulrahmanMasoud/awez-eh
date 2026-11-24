@@ -4,24 +4,19 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
-class DatabaseSeeder extends Seeder
+// Model events stay on: HasSearchText fills search_text on saving.
+final class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(ReferenceDataSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Made-up residents and listings: never in production, nor anywhere real people look.
+        if (App::environment(DemoContentSeeder::ENVIRONMENTS)) {
+            $this->call(DemoContentSeeder::class);
+        }
     }
 }

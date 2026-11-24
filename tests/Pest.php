@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,4 +25,32 @@ function domainLayerNamespaces(string $layer): array
         fn (string $directory): string => 'App\\Domains\\'.basename(dirname($directory)).'\\'.$layer,
         $directories,
     );
+}
+
+/**
+ * Every Eloquent model under app/, found from its file as PSR-4 maps it.
+ *
+ * @return list<class-string<Model>>
+ */
+function modelClasses(): array
+{
+    $root = __DIR__.'/../app';
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
+    $models = [];
+
+    foreach ($files as $file) {
+        if ($file->getExtension() !== 'php') {
+            continue;
+        }
+
+        $class = 'App\\'.str_replace('/', '\\', substr($file->getPathname(), strlen($root) + 1, -strlen('.php')));
+
+        if (class_exists($class) && is_subclass_of($class, Model::class) && ! new ReflectionClass($class)->isAbstract()) {
+            $models[] = $class;
+        }
+    }
+
+    sort($models);
+
+    return $models;
 }

@@ -10,7 +10,7 @@ use Monolog\Processor\ProcessorInterface;
 
 /**
  * Keeps secrets out of every log line (CLAUDE.md invariant 8): values under secret-looking
- * keys are replaced, and Egyptian mobile numbers written as plain text are masked. A
+ * keys are replaced, and Egyptian phone numbers written as plain text are masked. A
  * PhoneNumber object masks itself when the formatter turns it into a string.
  */
 final class RedactSensitiveData implements ProcessorInterface
@@ -24,9 +24,10 @@ final class RedactSensitiveData implements ProcessorInterface
     private const string SECRET_KEY = '/password|token|secret|authorization|api_key|cookie|\A(?:code|otp|otp_code|verification_code)\z/i';
 
     /**
-     * A mobile number with its prefix, as one run of digits: 010…, 2010…, +2010… or 002010….
+     * A mobile or landline number with its prefix, as one run of digits: 010…, 2010…, +2010…,
+     * 002010…, 048…, +2048….
      */
-    private const string PHONE_IN_TEXT = '/(?<!\d)(?:\+20|0020|20|0)1[0125]\d{8}(?!\d)/';
+    private const string PHONE_IN_TEXT = '/(?<!\d)'.PhoneNumber::PREFIX.'(?:'.PhoneNumber::MOBILE_DIGITS.'|'.PhoneNumber::LANDLINE_DIGITS.')(?!\d)/';
 
     public function __invoke(LogRecord $record): LogRecord
     {
@@ -59,7 +60,7 @@ final class RedactSensitiveData implements ProcessorInterface
     {
         return preg_replace_callback(
             self::PHONE_IN_TEXT,
-            fn (array $match): string => PhoneNumber::from($match[0])->mask(),
+            fn (array $match): string => PhoneNumber::fromMobileOrLandline($match[0])->mask(),
             $text,
         ) ?? $text;
     }

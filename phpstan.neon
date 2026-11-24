@@ -11,3 +11,6 @@ parameters:
         - routes/
 
     level: max
+
+    # Read the casts() arrays, so attributes have their cast types (enums, Money, Point, dates).
+    parseModelCastsMethod: true

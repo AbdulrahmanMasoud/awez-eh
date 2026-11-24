@@ -62,6 +62,15 @@ it('never writes a phone number, in an object or in plain text', function (): vo
         ->toContain('010*****678')->toContain('011*****678')->toContain('015*****678')->toContain('012*****678');
 });
 
+it('masks landlines written as text too', function (): void {
+    Log::channel('json')->info('Place called on 0482345678, 0223456789 and +2035123456');
+
+    $line = (string) file_get_contents($this->logFile);
+
+    expect($line)->not->toContain('482345678')->not->toContain('223456789')->not->toContain('35123456')
+        ->toContain('048****678')->toContain('022****789')->toContain('035***456');
+});
+
 it('never writes tokens, passwords or codes', function (): void {
     Log::channel('json')->info('Signed in', [
         'token' => '1|plain-text-token',
