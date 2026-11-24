@@ -57,7 +57,7 @@ Ask before adding any package not named in this brief or in `CLAUDE.md`.
 ## 6. Docs
 
 - `README.md`: what the project is in two lines, how to start it with Sail (`sail up -d`, `sail composer setup`), the commands, and links to `CLAUDE.md` and `docs/`.
-- Tick step 1.1 in `docs/BUILD_PLAN.md` only after its **Verify** line has passed; update `PROGRESS.md`; add the decisions you took to `DECISIONS.md` (numbered, continuing from 7).
+- Tick step 1.1 in `docs/BUILD_PLAN.md` only after its **Verify** line has passed; update `PROGRESS.md`; add the decisions you took to `DECISIONS.md` (numbered, continuing from 8).
 
 ## Acceptance
 
