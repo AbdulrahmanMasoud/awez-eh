@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>عاوز إيه – لوحة الأدمن</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7F4}
+a{color:#0B6B37}a:hover{color:#08522A}
+.shell{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow:auto}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.two{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.navlink{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#3D4B43;text-decoration:none;font-size:14px;min-height:24px}
+.navlink:hover{background:#EEF3EF;color:#14201A}
+.btn{font-family:inherit;cursor:pointer;border-radius:10px;font-size:13px;font-weight:500;min-height:36px;padding:0 14px;display:inline-flex;align-items:center;gap:6px}
+.row:hover{background:#FAFBF9}
+.tbl{overflow-x:auto}
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(3,1fr)}.two,.three{grid-template-columns:1fr}}
+@media (max-width:820px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.sidenav{display:none}.kpis{grid-template-columns:1fr 1fr}.topsearch{display:none}}
+</style>
+</helmet>
+<div class="shell" style="font-family: 'Readex Pro', system-ui, sans-serif; color: #14201A; background: #F5F7F4">
+
+<!-- Sidebar (right side in RTL) -->
+<aside class="side" style="background: #FFFFFF; border-inline-start: 1px solid #E3E9E4; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px">
+<div style="width: 40px; height: 40px; border-radius: 12px; background: #0B6B37; display: flex; align-items: center; justify-content: center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFC93C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 10a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1V14"/><circle cx="12" cy="16.6" r=".4" fill="#FFC93C"/></svg>
+</div>
+<div style="display: flex; flex-direction: column">
+<strong style="font-size: 17px; font-weight: 700">عاوز إيه</strong>
+<span style="font-size: 12px; color: #5C6B63">لوحة الإدارة · مدينة السادات</span>
+</div>
+</div>
+
+<nav class="sidenav" aria-label="القائمة الرئيسية" style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<a class="navlink" href="#" aria-current="page" style="background: #E8F4EC; color: #08522A; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>الرئيسية</a>
+<a class="navlink" href="#" style="justify-content: space-between"><span style="display: flex; align-items: center; gap: 12px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>المراجعة</span><span style="background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 8px">23</span></a>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #5C6B63; padding: 0 12px 6px">المحتوى</span>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-4h4v4"/></svg>العقارات</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/></svg>الصنايعية والخدمات</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 11v9h14v-9"/></svg>المطاعم والمحلات</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>المستعمل</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>دليل المدينة</a>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #5C6B63; padding: 0 12px 6px">النشاط</span>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>الطلبات والردود</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>الحجوزات والمعاينات</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.4-.9-1.4-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1.1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1.1 0-2.1-.6-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>العمولات والعملاء</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.5l-5.3 2.8 1.1-5.9L3.4 9.3l6-.8z"/></svg>التمييز والباقات</a>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 600; color: #5C6B63; padding: 0 12px 6px">النظام</span>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.7 3.2 2.5 3.5 5.2"/></svg>المستخدمين والصلاحيات</a>
+<a class="navlink" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>الإعدادات</a>
+</div>
+</nav>
+</aside>
+
+<!-- Main -->
+<main style="display: flex; flex-direction: column; min-width: 0">
+<header style="display: flex; align-items: center; gap: 16px; padding: 14px 32px; background: #FFFFFF; border-bottom: 1px solid #E3E9E4; flex-wrap: wrap">
+<label class="topsearch" style="flex: 1; max-width: 520px; display: flex; align-items: center; gap: 10px; background: #F5F7F4; border: 1px solid #E3E9E4; border-radius: 12px; padding: 0 14px; height: 44px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C6B63" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">بحث</span>
+<input type="search" placeholder="ابحث عن إعلان، مستخدم، رقم موبايل أو طلب…" style="flex: 1; border: 0; background: transparent; font-family: inherit; font-size: 14px; color: #14201A; outline: none">
+<kbd style="font-family: inherit; font-size: 11px; color: #5C6B63; border: 1px solid #D5DDD7; border-radius: 6px; padding: 2px 6px; background: #FFFFFF">⌘K</kbd>
+</label>
+<div style="flex: 1"></div>
+<button class="btn" type="button" style="background: #0B6B37; color: #FFFFFF; border: 0; height: 40px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>إضافة عقار</button>
+<button type="button" aria-label="الإشعارات" style="position: relative; width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E3E9E4; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14201A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+<span style="position: absolute; top: 9px; inset-inline-end: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C2410C; border: 2px solid #FFFFFF"></span>
+</button>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: #FFC93C; color: #14201A; display: flex; align-items: center; justify-content: center; font-weight: 700">ع</div>
+<div style="display: flex; flex-direction: column; line-height: 1.3">
+<span style="font-size: 13px; font-weight: 600">عبدالرحمن</span>
+<span style="font-size: 11px; color: #5C6B63">مدير النظام</span>
+</div>
+</div>
+</header>
+
+<div style="padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 24px; max-width: 1240px; width: 100%; box-sizing: border-box">
+
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700">صباح الخير يا عبدالرحمن</h1>
+<p style="margin: 0; font-size: 14px; color: #5C6B63">الثلاثاء ٢٤ نوفمبر · عندك <strong style="color: #C2410C">٢٣ حاجة</strong> مستنية قرارك النهارده</p>
+</div>
+<div role="group" aria-label="الفترة" style="display: flex; background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 12px; padding: 4px; gap: 2px">
+<button class="btn" type="button" style="border: 0; background: transparent; color: #5C6B63">النهارده</button>
+<button class="btn" type="button" style="border: 0; background: transparent; color: #5C6B63">الأسبوع</button>
+<button class="btn" type="button" aria-pressed="true" style="border: 0; background: #E8F4EC; color: #08522A; font-weight: 600">الشهر</button>
+</div>
+</div>
+
+<!-- KPIs -->
+<section class="kpis" aria-label="أرقام سريعة">
+<article style="background: #14201A; color: #FFFFFF; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; color: #C9D4CD">مستني مراجعة</span>
+<strong style="font-size: 32px; font-weight: 700; line-height: 1">23</strong>
+<span style="font-size: 12px; color: #FFC93C">أقدم واحد من ٦ ساعات</span>
+</article>
+<article style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; color: #5C6B63">عملاء محتملين (leads)</span>
+<strong style="font-size: 32px; font-weight: 700; line-height: 1">148</strong>
+<span style="font-size: 12px; color: #0B6B37; font-weight: 500">↑ ١٨٪ عن الشهر اللي فات</span>
+</article>
+<article style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; color: #5C6B63">عمولة متوقعة</span>
+<strong style="font-size: 26px; font-weight: 700; line-height: 1.25">٤٢٬٥٠٠ <span style="font-size: 14px; font-weight: 500; color: #5C6B63">ج.م</span></strong>
+<span style="font-size: 12px; color: #5C6B63">من ٩ صفقات في التفاوض</span>
+</article>
+<article style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; color: #5C6B63">إعلانات منشورة</span>
+<strong style="font-size: 32px; font-weight: 700; line-height: 1">612</strong>
+<span style="font-size: 12px; color: #5C6B63">٢١٤ عقار · ٢٩٨ مستعمل · ١٠٠ مكان</span>
+</article>
+<article style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; color: #5C6B63">مستخدمين جداد</span>
+<strong style="font-size: 32px; font-weight: 700; line-height: 1">386</strong>
+<span style="font-size: 12px; color: #0B6B37; font-weight: 500">↑ ٩٪ · ٧١٪ أكدوا الموبايل</span>
+</article>
+</section>
+
+<div class="two">
+<!-- Moderation queue -->
+<section style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; display: flex; flex-direction: column; min-width: 0">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 12px; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600">محتاج قرارك</h2>
+<span style="font-size: 12px; color: #5C6B63">الأقدم الأول · وافق أو ارفض من هنا من غير ما تفتح الصفحة</span>
+</div>
+<div role="tablist" aria-label="نوع المحتوى" style="display: flex; gap: 6px; flex-wrap: wrap">
+<button role="tab" aria-selected="true" class="btn" type="button" style="border: 1px solid #0B6B37; background: #E8F4EC; color: #08522A; min-height: 32px; padding: 0 12px">الكل 23</button>
+<button role="tab" aria-selected="false" class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #3D4B43; min-height: 32px; padding: 0 12px">عقارات 8</button>
+<button role="tab" aria-selected="false" class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #3D4B43; min-height: 32px; padding: 0 12px">صنايعية 6</button>
+<button role="tab" aria-selected="false" class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #3D4B43; min-height: 32px; padding: 0 12px">مستعمل 9</button>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column">
+<div class="row" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid #EEF2EF; flex-wrap: wrap">
+<div style="width: 64px; height: 52px; border-radius: 10px; background: #DCE8DF; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B6B37" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-4h4v4"/></svg></div>
+<div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><strong style="font-size: 14px; font-weight: 600">شقة ١٤٠م للبيع – المجاورة السابعة</strong><span style="font-size: 11px; font-weight: 600; background: #FFF4D6; color: #7A5600; border-radius: 6px; padding: 2px 8px">بوساطة المنصة</span></div>
+<span style="font-size: 12px; color: #5C6B63">عقار · أحمد سمير · ٦ صور · ١٬٨٥٠٬٠٠٠ ج.م · من ٦ ساعات</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #9A3412">رفض</button>
+<button class="btn" type="button" style="border: 0; background: #0B6B37; color: #FFFFFF">موافقة</button>
+</div>
+</div>
+
+<div class="row" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid #EEF2EF; flex-wrap: wrap">
+<div style="width: 64px; height: 52px; border-radius: 10px; background: #FDEBDD; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z"/></svg></div>
+<div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><strong style="font-size: 14px; font-weight: 600">محمود الكهربائي</strong><span style="font-size: 11px; font-weight: 600; background: #E8F4EC; color: #08522A; border-radius: 6px; padding: 2px 8px">طلب توثيق</span></div>
+<span style="font-size: 12px; color: #5C6B63">صنايعي · كهرباء · بطاقة + ٣ صور شغل · من ٤ ساعات</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #9A3412">رفض</button>
+<button class="btn" type="button" style="border: 0; background: #0B6B37; color: #FFFFFF">موافقة</button>
+</div>
+</div>
+
+<div class="row" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid #EEF2EF; flex-wrap: wrap">
+<div style="width: 64px; height: 52px; border-radius: 10px; background: #E9ECF6; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3A4A8C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+<div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><strong style="font-size: 14px; font-weight: 600">غسالة توشيبا ٨ كيلو – حالة ممتازة</strong><span style="font-size: 11px; font-weight: 600; background: #FDEBDD; color: #9A3412; border-radius: 6px; padding: 2px 8px">اتبلّغ عنه مرتين</span></div>
+<span style="font-size: 12px; color: #5C6B63">مستعمل · منى علي · ٤ صور · ٦٬٥٠٠ ج.م · من ٣ ساعات</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #9A3412">رفض</button>
+<button class="btn" type="button" style="border: 0; background: #0B6B37; color: #FFFFFF">موافقة</button>
+</div>
+</div>
+
+<div class="row" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid #EEF2EF; flex-wrap: wrap">
+<div style="width: 64px; height: 52px; border-radius: 10px; background: #DCE8DF; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B6B37" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 11v9h14v-9"/></svg></div>
+<div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px">
+<strong style="font-size: 14px; font-weight: 600">صيدلية الشفاء – المنطقة الرابعة</strong>
+<span style="font-size: 12px; color: #5C6B63">مكان · صيدلية · مواعيد ٢٤ ساعة · من ساعتين</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #9A3412">رفض</button>
+<button class="btn" type="button" style="border: 0; background: #0B6B37; color: #FFFFFF">موافقة</button>
+</div>
+</div>
+</div>
+<a href="#" style="padding: 14px 20px; border-top: 1px solid #EEF2EF; font-size: 13px; font-weight: 500; text-decoration: none">افتح صفحة المراجعة كلها (23) ←</a>
+</section>
+
+<!-- Leads chart -->
+<section style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600">العملاء المحتملين من العقارات</h2>
+<span style="font-size: 12px; color: #5C6B63">كل محادثة أو معاينة على عقار بوساطتنا = lead</span>
+</div>
+<div role="img" aria-label="رسم أعمدة لآخر ٨ أسابيع: من ٢٢ إلى ٤١ lead في الأسبوع" style="display: flex; align-items: flex-end; gap: 10px; height: 180px; padding-top: 8px; border-bottom: 1px solid #E3E9E4">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">22</span><div style="width: 100%; height: 54%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">27</span><div style="width: 100%; height: 66%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">24</span><div style="width: 100%; height: 58%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">31</span><div style="width: 100%; height: 75%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">29</span><div style="width: 100%; height: 70%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">35</span><div style="width: 100%; height: 85%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; color: #5C6B63">33</span><div style="width: 100%; height: 80%; background: #CFE5D7; border-radius: 6px 6px 2px 2px"></div></div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end"><span style="font-size: 11px; font-weight: 600; color: #08522A">41</span><div style="width: 100%; height: 100%; background: #0B6B37; border-radius: 6px 6px 2px 2px"></div></div>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 11px; color: #5C6B63; margin-top: -8px"><span>من ٨ أسابيع</span><span>الأسبوع ده</span></div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<div style="background: #F5F7F4; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #5C6B63">محادثات</span><strong style="font-size: 20px">97</strong></div>
+<div style="background: #F5F7F4; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #5C6B63">معاينات محجوزة</span><strong style="font-size: 20px">51</strong></div>
+</div>
+</section>
+</div>
+
+<!-- Deals table -->
+<section style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; display: flex; flex-direction: column; min-width: 0">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 12px; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600">صفقات العقارات</h2>
+<span style="font-size: 12px; color: #5C6B63">من أول lead لحد ما العمولة تتحصّل</span>
+</div>
+<a href="#" style="font-size: 13px; font-weight: 500; text-decoration: none">كل الصفقات ←</a>
+</div>
+<div class="tbl">
+<table style="width: 100%; min-width: 720px; border-collapse: collapse; font-size: 13px">
+<thead>
+<tr style="background: #F8FAF8; color: #5C6B63; text-align: start">
+<th scope="col" style="text-align: start; font-weight: 500; padding: 10px 20px">العقار</th>
+<th scope="col" style="text-align: start; font-weight: 500; padding: 10px 12px">العميل</th>
+<th scope="col" style="text-align: start; font-weight: 500; padding: 10px 12px">المرحلة</th>
+<th scope="col" style="text-align: start; font-weight: 500; padding: 10px 12px">السعر</th>
+<th scope="col" style="text-align: start; font-weight: 500; padding: 10px 12px">العمولة</th>
+<th scope="col" style="text-align: start; font-weight: 500; padding: 10px 20px">آخر حركة</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row" style="border-top: 1px solid #EEF2EF">
+<td style="padding: 12px 20px; font-weight: 500">فيلا ٣٢٠م – الحي السياحي</td>
+<td style="padding: 12px">كريم ع. · 010•••••482</td>
+<td style="padding: 12px"><span style="background: #FFF4D6; color: #7A5600; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 500">تفاوض</span></td>
+<td style="padding: 12px">٤٬٢٠٠٬٠٠٠ ج.م</td>
+<td style="padding: 12px; font-weight: 600">٨٤٬٠٠٠ ج.م</td>
+<td style="padding: 12px 20px; color: #5C6B63">معاينة تانية بكرة ٥م</td>
+</tr>
+<tr class="row" style="border-top: 1px solid #EEF2EF">
+<td style="padding: 12px 20px; font-weight: 500">شقة ١٢٠م للإيجار – المجاورة الثالثة</td>
+<td style="padding: 12px">سارة م. · 012•••••915</td>
+<td style="padding: 12px"><span style="background: #E8F4EC; color: #08522A; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 500">اتقفلت</span></td>
+<td style="padding: 12px">٧٬٠٠٠ ج.م/شهر</td>
+<td style="padding: 12px; font-weight: 600">٧٬٠٠٠ ج.م</td>
+<td style="padding: 12px 20px; color: #5C6B63">العمولة اتحصّلت امبارح</td>
+</tr>
+<tr class="row" style="border-top: 1px solid #EEF2EF">
+<td style="padding: 12px 20px; font-weight: 500">أرض ٤٠٠م – المنطقة الصناعية</td>
+<td style="padding: 12px">شركة النيل · 011•••••230</td>
+<td style="padding: 12px"><span style="background: #E9ECF6; color: #2E3B73; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 500">معاينة</span></td>
+<td style="padding: 12px">٢٬٦٠٠٬٠٠٠ ج.م</td>
+<td style="padding: 12px; font-weight: 600">٥٢٬٠٠٠ ج.م</td>
+<td style="padding: 12px 20px; color: #5C6B63">المعاينة الخميس ١١ص</td>
+</tr>
+<tr class="row" style="border-top: 1px solid #EEF2EF">
+<td style="padding: 12px 20px; font-weight: 500">دوبلكس ٢٢٠م – المجاورة الأولى</td>
+<td style="padding: 12px">هاني ر. · 015•••••067</td>
+<td style="padding: 12px"><span style="background: #F1F3F2; color: #3D4B43; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 500">lead جديد</span></td>
+<td style="padding: 12px">٢٬٩٥٠٬٠٠٠ ج.م</td>
+<td style="padding: 12px; font-weight: 600">٥٩٬٠٠٠ ج.م</td>
+<td style="padding: 12px 20px; color: #5C6B63">فتح محادثة من ٢٠ دقيقة</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<div class="three">
+<!-- Open requests -->
+<section style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600">طلبات من غير رد</h2>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 500">عاوز سبّاك ضروري – تسريب في المطبخ</span><span style="font-size: 12px; color: #C2410C">من ساعة ونص · مفيش رد</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 500">شقة إيجار قريبة من الجامعة بـ ٥٠٠٠</span><span style="font-size: 12px; color: #5C6B63">من ٣ ساعات · ردّين</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 500">مدرّس فيزيا تالتة ثانوي</span><span style="font-size: 12px; color: #C2410C">من ٥ ساعات · مفيش رد</span></div>
+</div>
+<button class="btn" type="button" style="border: 1px solid #E3E9E4; background: #FFFFFF; color: #14201A; justify-content: center">ابعت إشعار للصنايعية المناسبين</button>
+</section>
+
+<!-- Districts -->
+<section style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600">أكتر مناطق عليها طلب</h2>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; font-size: 13px"><span>المجاورة السابعة</span><span style="color: #5C6B63">٣٨</span></div><div style="height: 8px; background: #EEF2EF; border-radius: 99px"><div style="width: 100%; height: 100%; background: #0B6B37; border-radius: 99px"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; font-size: 13px"><span>الحي السياحي</span><span style="color: #5C6B63">٢٩</span></div><div style="height: 8px; background: #EEF2EF; border-radius: 99px"><div style="width: 76%; height: 100%; background: #0B6B37; border-radius: 99px"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; font-size: 13px"><span>المجاورة الثالثة</span><span style="color: #5C6B63">٢١</span></div><div style="height: 8px; background: #EEF2EF; border-radius: 99px"><div style="width: 55%; height: 100%; background: #0B6B37; border-radius: 99px"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="display: flex; justify-content: space-between; font-size: 13px"><span>المنطقة الرابعة</span><span style="color: #5C6B63">١٤</span></div><div style="height: 8px; background: #EEF2EF; border-radius: 99px"><div style="width: 37%; height: 100%; background: #0B6B37; border-radius: 99px"></div></div></div>
+</div>
+</section>
+
+<!-- Activity log -->
+<section style="background: #FFFFFF; border: 1px solid #E3E9E4; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600">مين عمل إيه</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+<li style="display: flex; gap: 10px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #0B6B37; margin-top: 6px; flex-shrink: 0"></span><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px"><strong style="font-weight: 600">يوسف</strong> وافق على ٤ إعلانات مستعمل</span><span style="font-size: 11px; color: #5C6B63">من ١٠ دقايق</span></div></li>
+<li style="display: flex; gap: 10px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #C2410C; margin-top: 6px; flex-shrink: 0"></span><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px"><strong style="font-weight: 600">يوسف</strong> رفض إعلان «لابتوب» – صور مش حقيقية</span><span style="font-size: 11px; color: #5C6B63">من ٢٥ دقيقة</span></div></li>
+<li style="display: flex; gap: 10px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #FFC93C; margin-top: 6px; flex-shrink: 0"></span><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px"><strong style="font-weight: 600">عبدالرحمن</strong> ميّز «فيلا الحي السياحي» أسبوع</span><span style="font-size: 11px; color: #5C6B63">من ساعة</span></div></li>
+<li style="display: flex; gap: 10px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #0B6B37; margin-top: 6px; flex-shrink: 0"></span><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px"><strong style="font-weight: 600">النظام</strong> سجّل lead جديد على «دوبلكس المجاورة الأولى»</span><span style="font-size: 11px; color: #5C6B63">من ٢٠ دقيقة</span></div></li>
+</ol>
+</section>
+</div>
+
+<p style="margin: 0; font-size: 12px; color: #5C6B63; text-align: center">كل الأرقام والأسماء هنا بيانات تجريبية للتصميم</p>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1560}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

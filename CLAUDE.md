@@ -156,5 +156,6 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 ## When unsure
 
 - Read `docs/ARCHITECTURE.md` and the closest existing domain; follow its patterns.
+- Admin panel work follows `docs/design/ADMIN_PANEL.md`, the design the owner approved.
 - Choose the boring, explicit option over the clever one.
 - Ask before adding a new package. Prefer what Laravel already provides.
