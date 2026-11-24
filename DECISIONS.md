@@ -32,14 +32,14 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
 20. **`composer.json` keeps `"php": "^8.5"`** (owner's decision, entry 14).
 21. **Step 1.4 may edit task 001's `users` migration** instead of adding a second one, because nothing has been deployed (owner's decision). From the first deploy on, "never edit a merged migration" applies with no exception.
 22. **CI runs on pushes to `main` and on pull requests only**, as in SellBubble (owner's decision): a branch with a pull request is checked once per push, not twice.
-23. **Search matches from a trigram similarity of 0.25**, below pg_trgm's own 0.3 (`config('awez.search.similarity_threshold')`). Measured after `ArabicNormalizer` on PostgreSQL 18:
+23. **Search matches from a trigram similarity of 0.25** (accepted by the owner), below pg_trgm's own 0.3 (`config('awez.search.similarity_threshold')`). Measured after `ArabicNormalizer` on PostgreSQL 18:
     - typos score from 0.27 (`مسشتفى` for `مستشفى`, two letters swapped) up to 1.0;
     - unrelated words score at most 0.09 (`مطعم` and `مستشفى`).
     
     At 0.3 the common swapped-letters typo would be missed. Search code must compare with this value (or set `pg_trgm.similarity_threshold`), not rely on the `%` operator's default.
 24. **The API's middleware is global and acts on `/api/*` by path:** `AssignRequestId` (every request), `ForceJsonResponse` and `SetLocaleFromAcceptLanguage`, all three prepended in `bootstrap/app.php`. As route-group middleware, a 404 for an unknown route and a 405 would be thrown before the group runs, and would answer without the client's language.
 25. **Other HTTP errors keep their status** (405, 503 in maintenance, ...), with the status's name as the code (`method_not_allowed`, `service_unavailable`) and a generic translated message. `server_error` is for 500 only. Headers such as `Allow` and `Retry-After` are kept.
-26. **API rate limits: 60 requests a minute per signed-in user, 300 per IP address for guests** (`config/awez.php`, `AWEZ_API_RATE_LIMIT_PER_USER` and `_PER_IP`).
+26. **API rate limits: 60 requests a minute per signed-in user, 300 per IP address for guests** (accepted by the owner) (`config/awez.php`, `AWEZ_API_RATE_LIMIT_PER_USER` and `_PER_IP`).
     - The guest limit is high because Egyptian mobile networks put many customers behind one address.
     - The limiter asks the `sanctum` guard, so a resident who sends a token is counted alone even on public routes.
     - Behind a proxy, `TrustProxies` must be configured for the IP to be the client's (step 4.4).
@@ -55,5 +55,5 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - It also masks Egyptian mobile numbers written as plain text in messages and context.
 30. **API JSON is UTF-8:** Arabic is not sent as `\u` escapes, which take three times the bytes.
 31. **Tests send no `Accept-Language` unless they set one** (`tests/TestCase.php`), because Symfony's test requests otherwise claim `en-us`.
-32. **Validation messages for each field are English for now**, even in Arabic: Laravel ships no Arabic `validation.php`. The `message` and `code` are translated. **Review:** a translation package or our own `lang/ar/validation.php` (docs/OPEN_QUESTIONS.md 3).
+32. **Validation messages come in Arabic from `laravel-lang/lang`** (owner's decision): a development dependency (15.39), whose Arabic files are published into `lang/ar` (`auth`, `pagination`, `passwords`, `validation`, and `ar.json`) and committed, so production needs no package. `sail artisan lang:update` refreshes them. Field names stay as sent (`حقل name مطلوب.`) until the API translates attribute names.
 33. **Mutation testing runs with `composer test:mutate`** (pcov, minimum score 100), on the classes that declare `mutates()` in their tests: `MoneyCast` for now. It is not part of `composer check` or CI; run it when money code changes.

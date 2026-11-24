@@ -16,17 +16,11 @@
 
 ## Decisions for the owner
 
-1. **The field messages of a validation error are English, even in Arabic** (`DECISIONS.md` 32, `docs/OPEN_QUESTIONS.md` 3). The `message` and `code` are translated; the per-field texts come from Laravel, which ships no Arabic.
-    - Done meanwhile: Laravel's English messages.
-    - Option A: a translation package such as `laravel-lang/lang`, which needs your yes for a new package. It brings Arabic for every rule and stays maintained.
-    - Option B: our own `lang/ar/validation.php`, about 100 lines that we write and keep up with new rules.
-    - The app shows these texts under each field, so this matters before step 2.2.
-2. **The guest rate limit is 300 requests a minute per IP address**, the per-user limit 60 (`DECISIONS.md` 26).
-    - A low per-IP limit would block residents who share a carrier address; a high one gives less protection from one abusive client.
-    - Both numbers are `.env` settings, so they can change without a deploy of code.
-3. **The trigram threshold is 0.25**, below pg_trgm's 0.3 (`DECISIONS.md` 23).
-    - At 0.3, `مسشتفى` (two letters swapped) would not find `مستشفى`.
-    - Unrelated words measured at most 0.09, so there is room. Step 2.6 will show whether longer texts need a different value.
+All three are answered (see the update at the end):
+
+1. **Arabic validation messages:** option A, `laravel-lang/lang`, done.
+2. **Rate limits** of 60 per user and 300 per IP address: accepted.
+3. **Trigram threshold** of 0.25: accepted.
 
 ## The owner's steps
 
@@ -50,7 +44,7 @@ No DNS, Dokploy or production settings yet.
 - The first run stopped while loading: a test extends `App\Exceptions\DomainException`, which did not exist yet.
 - After adding that one base class: 185 tests, 27 passed (task 001's, and the new rules that already held), 158 failing across every new area.
 
-**`sail composer check`:** Pint passed, Rector made 0 changes, Larastan at max found 0 errors with no baseline and no ignores. Pest: **190 tests, 481 assertions**, in parallel.
+**`sail composer check`:** Pint passed, Rector made 0 changes, Larastan at max found 0 errors with no baseline and no ignores. Pest: **192 tests, 487 assertions**, in parallel (190 and 481 before the update).
 
 Tests added:
 
@@ -61,7 +55,7 @@ Tests added:
     - `MoneyCast`: 23.
 - **Feature:**
     - application defaults: 11;
-    - API error shape: 14;
+    - API error shape: 16;
     - locale: 12;
     - ping and rate limits: 7;
     - request ids: 10;
@@ -234,7 +228,33 @@ $ tail -1 storage/logs/laravel.log
 ## Deploy notes
 
 - No migrations.
-- New package: `brick/money` 0.15.2 (runtime).
+- New packages: `brick/money` 0.15.2 (runtime); `laravel-lang/lang` 15.39.2 with `laravel-lang/publisher` (development only: its Arabic files are committed in `lang/ar`).
 - New `.env` keys, all optional with defaults: `AWEZ_API_RATE_LIMIT_PER_USER` (60), `AWEZ_API_RATE_LIMIT_PER_IP` (300), `LOG_JSON_PATH`.
 - Changed defaults: `APP_LOCALE=ar`, `LOG_STACK=single,json`.
 - In production: destructive database commands (`migrate:fresh`, `db:wipe`, ...) refuse to run, and URLs are generated with `https`.
+
+## Update (2026-11-24)
+
+**The owner's answers:**
+
+- Arabic validation messages: option A, `laravel-lang/lang`.
+- Rate limits and the trigram threshold: accepted as they are.
+
+**What changed:**
+
+- **`laravel-lang/lang` 15.39.2 is a development dependency.** It brings `laravel-lang/publisher`, whose `sail artisan lang:add ar` published `lang/ar/auth.php`, `pagination.php`, `passwords.php`, `validation.php` and `lang/ar.json`.
+    - The files are committed, so production installs no package.
+    - Pint reformatted them to our style, so a later `lang:update` will show style changes too.
+    - Our `lang/ar/errors.php` and `lang/en` are unchanged.
+- **A validation error now gives Arabic messages for each field**: `{"name": ["حقل name مطلوب."], "age": ["يجب أن يكون حقل age عددًا صحيحًا."]}`.
+    - Field names stay as the client sent them, because the package translates messages, not attribute names.
+- **A new feature test checks both languages** (`ErrorResponsesTest`, Arabic and English datasets).
+    - With `lang/ar/validation.php` moved away it failed (`'The name field is required.'` where `'حقل name مطلوب.'` was expected); with the file back it passed.
+- **Docs:** `DECISIONS.md` 32 records the choice, 23 and 26 are marked accepted, and `docs/OPEN_QUESTIONS.md` 3 is closed.
+
+**Results:**
+
+- `sail composer check` is green: 192 tests, 487 assertions.
+- `composer test:mutate`: 37/37, score 100%.
+
+**After the merge:** the owner authorized Claude Code to squash-merge this PR once CI is green, and then to do the owner's steps above (branch deletion included) from the main checkout.
