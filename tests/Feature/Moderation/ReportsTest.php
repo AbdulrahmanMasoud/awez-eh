@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Domains\Bookings\Models\Booking;
+use App\Domains\Conversations\Models\Conversation;
+use App\Domains\Conversations\Models\Message;
 use App\Domains\Geography\Models\City;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
@@ -11,6 +14,7 @@ use App\Domains\Places\Models\Place;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
+use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
 use Illuminate\Database\ClassMorphViolationException;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +32,10 @@ it('enforces a morph map with short names', function (): void {
             'used_item' => UsedItem::class,
             'request' => ServiceRequest::class,
             'request_reply' => RequestReply::class,
+            'conversation' => Conversation::class,
+            'message' => Message::class,
+            'booking' => Booking::class,
+            'review' => Review::class,
         ]);
 });
 
@@ -47,6 +55,8 @@ it('stores what a report points at by its short name and finds it back', functio
     [UsedItem::class, 'used_item'],
     [ServiceRequest::class, 'request'],
     [RequestReply::class, 'request_reply'],
+    [Message::class, 'message'],
+    [Review::class, 'review'],
 ]);
 
 it('refuses to point at a model the morph map does not name', function (): void {

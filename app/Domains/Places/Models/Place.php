@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Places\Models;
 
+use App\Domains\CityGuide\Models\DutyPharmacy;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
@@ -54,6 +55,16 @@ final class Place extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The nights the place is the duty pharmacy.
+     *
+     * @return HasMany<DutyPharmacy, $this>
+     */
+    public function dutyNights(): HasMany
+    {
+        return $this->hasMany(DutyPharmacy::class);
     }
 
     /**

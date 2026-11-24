@@ -19,7 +19,7 @@ sail up -d                  # app (http://localhost:8020), PostgreSQL + PostGIS,
 sail composer dev           # queue worker and logs
 sail composer check         # THE gate: pint --test, rector --dry-run, phpstan, pest (unit + feature + arch)
 sail composer test          # pest unit + feature + arch, parallel
-sail composer test:mutate   # mutation testing of money code (score 100), run when it changes
+sail composer test:mutate   # mutation testing of money, commissions and the booking state machine (score 100), run when they change
 sail composer fmt           # pint + rector (writes)
 sail artisan migrate:fresh --seed
 ```
@@ -87,7 +87,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 **Actions.** `final`, constructor-injected dependencies, one public `handle(...)` with typed parameters and return. Multi-row writes in `DB::transaction()`. Events with side effects implement `ShouldDispatchAfterCommit`. Named verb + noun: `PublishProperty`, `BookViewing`, `ReplyToRequest`.
 
-**Models.** Relationships, casts (`casts()` method), scopes, small accessors. No workflows. `$fillable` explicit. `Model::shouldBeStrict()` outside production. Status and type columns are backed enums, stored as strings with a `CHECK` listing their values. Primary keys are UUID v7. A model in `App\Domains\<Domain>\Models` names its factory with `#[UseFactory]` and its policy with `#[UsePolicy]`. Relationships are declared on both sides of every foreign key. The morph map is enforced (`AppServiceProvider`): a model stored in a polymorphic column needs a short name there. Locations use `PointCast` and `HasLocation`; searchable text uses `HasSearchText`; reference data names use `HasTranslatedName`.
+**Models.** Relationships, casts (`casts()` method), scopes, small accessors. No workflows. `$fillable` explicit. `Model::shouldBeStrict()` outside production. Status and type columns are backed enums, stored as strings with a `CHECK` listing their values. Primary keys are UUID v7. A model in `App\Domains\<Domain>\Models` names its factory with `#[UseFactory]` and its policy with `#[UsePolicy]`. Relationships are declared on both sides of every foreign key. The morph map is enforced (`AppServiceProvider`): a model stored in a polymorphic column needs a short name there. Locations use `PointCast` and `HasLocation`; searchable text uses `HasSearchText`; reference data names use `HasTranslatedName`. Append-only tables (`leads`, `booking_events`, `commission_entries`) call `AppendOnly::enable()` in their migration and use `IsAppendOnly` on their model; their parents use `restrictOnDelete`.
 
 **Data objects.** Inputs and outputs crossing a boundary are `spatie/laravel-data` classes, `final readonly` where possible.
 
@@ -144,7 +144,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 - Form Requests are final and extend `FormRequest`.
 - `App\Support` does not depend on `App\Domains`, `App\Http` or `App\Filament`.
 - Models live only in `App\Domains\*\Models`, are final, use `HasUuids` and declare their fillable attributes.
-- Every model whose table has a `user_id` has a policy.
+- Every model whose table has a `user_id` or a `resident_id` has a policy.
 
 Feature tests in `tests/Feature/Database` read the schema: an index behind every foreign key, GiST on every geography column, GIN trigram on every `search_text`, enum `CHECK`s that match the PHP enums, the delete rule of every foreign key, and relationships on both sides of every foreign key.
 

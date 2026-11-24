@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Geography\Models;
 
+use App\Domains\CityGuide\Models\GuideEntry;
+use App\Domains\CityGuide\Models\NewsItem;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Places\Models\Place;
 use App\Domains\RealEstate\Models\Property;
@@ -31,6 +33,22 @@ final class City extends Model
 
     use HasTranslatedName;
     use HasUuids;
+
+    /**
+     * @return HasMany<GuideEntry, $this>
+     */
+    public function guideEntries(): HasMany
+    {
+        return $this->hasMany(GuideEntry::class);
+    }
+
+    /**
+     * @return HasMany<NewsItem, $this>
+     */
+    public function newsItems(): HasMany
+    {
+        return $this->hasMany(NewsItem::class);
+    }
 
     /**
      * @return HasMany<District, $this>

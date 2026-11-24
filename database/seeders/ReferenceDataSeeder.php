@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domains\CityGuide\Enums\GuideCategory;
 use App\Domains\Geography\Models\City;
 use App\Domains\Places\Models\PlaceCategory;
 use App\Domains\Services\Models\Trade;
@@ -11,8 +12,9 @@ use Database\Factories\Support\SadatCity;
 use Illuminate\Database\Seeder;
 
 /**
- * The city, its districts, the trades and the place categories: data every environment needs,
- * production included. Idempotent: it updates rows by slug, so it can run on every deploy.
+ * The city, its districts and emergency numbers, the trades and the place categories: data every
+ * environment needs, production included. Idempotent: it updates rows by slug (and emergency
+ * numbers by title), so it can run on every deploy.
  *
  * Icons are names from Lucide, the stroke icon set closest to the admin panel's Heroicons.
  */
@@ -72,6 +74,20 @@ final class ReferenceDataSeeder extends Seeder
         ['building-supplies', 'مستلزمات بناء', 'Building supplies', 'hard-hat', []],
     ];
 
+    /**
+     * Egypt's national emergency lines, which serve Sadat City (a Review item in DECISIONS.md).
+     *
+     * @var list<array{string, string}>
+     */
+    private const array EMERGENCY_NUMBERS = [
+        ['الشرطة', '122'],
+        ['الإسعاف', '123'],
+        ['المطافئ', '180'],
+        ['طوارئ الكهرباء', '121'],
+        ['طوارئ الغاز', '129'],
+        ['طوارئ المياه', '125'],
+    ];
+
     public function run(): void
     {
         $city = City::query()->updateOrCreate(
@@ -81,6 +97,13 @@ final class ReferenceDataSeeder extends Seeder
 
         foreach (self::DISTRICTS as $index => [$slug, $arabic, $english]) {
             $city->districts()->updateOrCreate(['slug' => $slug], ['name_ar' => $arabic, 'name_en' => $english, 'sort_order' => $index + 1]);
+        }
+
+        foreach (self::EMERGENCY_NUMBERS as $index => [$title, $number]) {
+            $city->guideEntries()->updateOrCreate(
+                ['category' => GuideCategory::Emergency, 'title' => $title],
+                ['phone_display' => $number, 'sort_order' => $index + 1, 'is_published' => true],
+            );
         }
 
         foreach (self::TRADES as $index => [$slug, $arabic, $english, $icon]) {

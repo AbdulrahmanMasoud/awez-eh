@@ -113,3 +113,70 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
 51. **Factories make content pending review**, as new content is. The states `published()`, `rejected()`, `paused()` and `inStatus()` set the moderation columns together.
 52. **Larastan reads `casts()`** (`parseModelCastsMethod: true`), so attributes have their cast types: enums, `Money`, `Point`, dates. Each moderated model lists the moderation casts in its own `casts()`; a trait merging them at runtime is invisible to Larastan.
 53. **"Newest first" can order by `id`:** UUID v7 keys are time-ordered, so lists need no separate `created_at` index.
+
+## Step 1.3b (task 004)
+
+54. **The rest of the data model:** domains `Conversations`, `Bookings`, `Reviews`, `Favorites` (`favorites`), `Alerts` (`search_alerts`), `Commissions`, `Promotions` and `CityGuide`. Laravel's `notifications` table (`make:notifications-table`) uses UUID morphs, and users are stored in it as `user`; it has no model of ours, and the Notifications domain gets its notification classes in step 3.4.
+55. **Append-only tables are enforced by PostgreSQL:** `leads`, `booking_events` and `commission_entries`.
+    - `App\Support\Database\AppendOnly::enable()` attaches triggers that refuse `UPDATE`, `DELETE` and `TRUNCATE` (which skips row triggers); `disable()` detaches them.
+    - The SQL is literal, and the table is a bound `regclass`, so PostgreSQL quotes the names. Its three functions (`append_only_refuse`, `_attach`, `_detach`) are created or replaced on every call: `migrate:fresh` drops tables and their triggers but leaves functions, and a rollback leaves them too, which is harmless.
+    - The models use `IsAppendOnly`: `save()` on an existing row and `delete()` throw `App\Exceptions\AppendOnlyViolation` before the database is asked, and rows record `created_at` only.
+56. **Review: some rows keep their parents for good,** because their tables are histories or append-only. These can never be hard-deleted:
+    - a user who is the resident or counterpart of a booking, the actor of a booking event, the resident of a lead, the recorder of a commission entry, or the sender of a message in someone else's conversation;
+    - a property with leads or commission entries, and an agreement with commission entries;
+    - a booking, and a lead that a correction or a commission entry points at.
+
+    So step 1.4's account deletion cannot delete the `users` row of an account with any history. It blanks the personal data instead, as entry 41 already does for brokered listings. The owner confirms that this applies to every such account.
+57. **A message keeps its sender's account** with `noActionOnDelete`, which PostgreSQL checks at the end of the statement. A conversation deleted with its resident takes its messages with it, but a member of staff whose messages stay in residents' conversations cannot be deleted; staff accounts are deactivated instead.
+58. **Conversations.**
+    - No counterpart means the platform answers, as on every brokered property: the owner's id is in neither the conversation nor its messages, which a test checks, and the owner cannot read them.
+    - A resident has one open conversation per subject (a partial unique index); the subject is one of `property`, `provider`, `place`, `used_item` or `request_reply` (a `CHECK`).
+    - A conversation goes with either participant's account. A brokered one's resident has leads, so that account cannot go (entry 56).
+    - Only the participants see a conversation; nobody deletes one through the API, because a lead may point at it.
+59. **Leads.** One live lead per conversation or booking (a partial unique index).
+    - A correction is a new row that carries the voided lead's details and source, with `voids_lead_id` and a required `void_reason`. A lead is voided at most once.
+    - A chat lead comes from a conversation, and a viewing lead from a booking (a `CHECK`).
+    - No resident reads a lead through the API, not even the one it is about (`LeadPolicy` refuses everyone); admins see leads in Filament.
+60. **Review: the booking state machine** (`BookingStateMachine`). The brief names the statuses and the actors; these transitions are my proposal, for the owner and for step 3.1:
+
+    | From | To | Kinds | Who |
+    | --- | --- | --- | --- |
+    | requested | confirmed | both | counterpart, platform |
+    | requested | declined | both | counterpart, platform, system (nobody answered in time) |
+    | requested, confirmed | cancelled_by_resident | both | resident |
+    | confirmed | completed | viewings | counterpart, platform |
+    | confirmed | on_the_way, in_progress | visits | counterpart |
+    | confirmed | cancelled_by_counterpart, no_show | both | counterpart, platform |
+    | on_the_way | in_progress, no_show | visits | counterpart |
+    | on_the_way | cancelled_by_resident | visits | resident |
+    | on_the_way | cancelled_by_counterpart | visits | counterpart, platform |
+    | in_progress | completed | visits | counterpart |
+
+    - "Platform" is the staff, who run brokered viewings; `no_show` means the resident did not show up.
+    - A visit completes only from `in_progress`. Declined, completed, both cancellations and `no_show` are terminal.
+    - The database also refuses `on_the_way` and `in_progress` for a viewing, and a viewing of anything but a property or a visit by anyone but a provider.
+    - The table is built from `BookingTransition` objects in a method, not a constant: mutation testing runs only the tests that cover a line, and line coverage never reaches the inside of a constant.
+61. **Reviews:** one per booking (a unique `booking_id`); a rating from 1 to 5; a reply comes with its date; `is_hidden` comes with `hidden_at`. That the booking is `completed` is the Action's check in step 3.2. Everyone sees a review unless an admin hid it, and its reviewer always does.
+62. **`CommissionBalance`.**
+    - `expected` is the sum of `expected` entries minus `cancelled` ones; `invoiced` and `collected` are their own sums; `outstanding` is invoiced minus collected.
+    - Amounts are positive (a `CHECK`), and all of a property's entries are in one currency: Money refuses to add another.
+    - Pest makes only two mutations of it, because its operators do not swap Money's `plus()` and `minus()`; the unit tests check every total.
+63. **Search alerts** keep their query and its normalized `search_text`, which stays null without a query. A saving hook sets it, not a mutator: an attribute named `query` cannot have one, because Eloquent's static `query()` takes that name. `filters` is `jsonb`, `'{}'` until step 3.4 shapes it. A point and a radius come together. `search_text` has its GIN index, like every `search_text` column.
+64. **Featured placements** are active from `starts_at` up to, not including, `ends_at`, unless cancelled (`active()`). Their morph columns are written by hand, so the brief's index on `(featurable_type, featurable_id, ends_at)` replaces the one `uuidMorphs` would add. One with no package was granted by an admin.
+65. **Polymorphic columns list their short names in a `CHECK`**: what a conversation, a booking, a review, a favorite, a placement or a lead may point at. A wrong but mapped type, such as a favorite of a report, is refused.
+66. **City guide.**
+    - `phone_display` is text: emergency lines have three digits (`122`) and hotlines five, which `PhoneNumber` rightly refuses.
+    - A duty pharmacy's `duty_date` is a Cairo calendar date, like opening hours (entry 40), while `starts_at` and `ends_at` are UTC.
+    - A news item's author is kept with `nullOnDelete`, so an admin account can go, and a published item has a date.
+67. **Review: the emergency numbers** seeded for Sadat City are Egypt's national lines: الشرطة 122، الإسعاف 123، المطافئ 180، طوارئ الكهرباء 121، طوارئ الغاز 129، طوارئ المياه 125. The owner confirms them, and sends the city's hospitals and transport lines.
+68. **The morph map adds `conversation`, `message`, `booking` and `review`.** Messages and reviews can be reported.
+69. **Demo interactions** (`DemoInteractionSeeder`, after `DemoContentSeeder`, in `local` and `testing` only).
+    - A member of staff (`staff@awez-eh.test`) answers for the platform; admin roles come in step 1.5.
+    - Every booking's history is walked through the state machine.
+    - Every brokered conversation and viewing has its lead, and one chat lead is corrected.
+    - The commission entries follow the agreement's rate on a deal of 1,800,000 pounds.
+    - The two featured packages have demo prices (OPEN_QUESTIONS 2).
+    - A pharmacy is on duty for each of the next 14 nights, 20:00 to 08:00 Cairo time.
+70. **Two Rector rules don't fit Laravel code here:**
+    - `RemoveUnusedPublicMethodParameterRector` is skipped for policies. The Gate reads a policy method's first parameter to decide whether a guest may be asked at all, so its parameters are a contract even when the answer ignores them.
+    - A booking's events are `timeline()`, not `events()`: Rector reads `->events` as Eloquent's old `$events` property and renames it to `dispatchesEvents`.

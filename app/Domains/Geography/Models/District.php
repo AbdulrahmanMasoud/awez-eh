@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Geography\Models;
 
+use App\Domains\Alerts\Models\SearchAlert;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Places\Models\Place;
 use App\Domains\RealEstate\Models\Property;
@@ -32,6 +33,14 @@ final class District extends Model
 
     use HasTranslatedName;
     use HasUuids;
+
+    /**
+     * @return HasMany<SearchAlert, $this>
+     */
+    public function searchAlerts(): HasMany
+    {
+        return $this->hasMany(SearchAlert::class);
+    }
 
     /**
      * @return BelongsTo<City, $this>

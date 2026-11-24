@@ -11,8 +11,8 @@ The owner and Claude (on claude.ai) plan the work here. Claude Code carries it o
 | --- | ---------------------------------------------------------------------- | ------ | --- |
 | 001 | [Project skeleton and quality gate (BUILD_PLAN 1.1)](001-project-skeleton.md) | done   | #1  |
 | 002 | [Core support (BUILD_PLAN 1.2)](002-core-support.md)                          | done   | #3  |
-| 003 | [Data model: geography and content (BUILD_PLAN 1.3a)](003-content-data-model.md) | review | #5  |
-| 004 | Data model: interaction and business (BUILD_PLAN 1.3b)                 | planned |     |
+| 003 | [Data model: geography and content (BUILD_PLAN 1.3a)](003-content-data-model.md) | done   | #5  |
+| 004 | [Data model: interaction and business (BUILD_PLAN 1.3b)](004-interaction-data-model.md) | in progress |     |
 
 The statuses are `planned` (no brief yet, do not start), `ready`, `in progress`, `review` (the PR is open and the report is written), `done` (merged) and `dropped`.
 

@@ -72,7 +72,7 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 ## 7. Commission protection
 
-For a listing with `brokered = true`, the API never returns the owner's phone number. Opening a chat or booking a viewing creates a `leads` row (resident, listing, channel, time) in the same transaction. Leads are append-only.
+For a listing with `brokered = true`, the API never returns the owner's phone number, and the platform's staff answer its conversations and run its viewings: neither has a counterpart, so the owner never appears. Opening a chat or booking a viewing creates a `leads` row (resident, listing, channel, source) in the same transaction. Leads, booking events and commission entries are append-only: PostgreSQL triggers refuse every update and delete, and a correction is a new row that voids an earlier one. A property's commission is the sum of its entries, never a stored number.
 
 ## 8. Notifications
 

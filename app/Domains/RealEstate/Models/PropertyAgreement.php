@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\RealEstate\Models;
 
+use App\Domains\Commissions\Models\CommissionEntry;
 use App\Domains\Identity\Models\User;
 use App\Support\Casts\MoneyCast;
 use App\Support\Casts\PhoneNumberCast;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * The written brokerage agreement with a property's owner (admin only). The commission is a rate in
@@ -27,6 +29,14 @@ final class PropertyAgreement extends Model
     use HasFactory;
 
     use HasUuids;
+
+    /**
+     * @return HasMany<CommissionEntry, $this>
+     */
+    public function commissionEntries(): HasMany
+    {
+        return $this->hasMany(CommissionEntry::class);
+    }
 
     /**
      * @return BelongsTo<Property, $this>
