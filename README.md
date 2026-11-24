@@ -14,6 +14,7 @@ docker run --rm -v "$(pwd):/app" -w /app composer:2 composer install
 vendor/bin/sail up -d --wait
 vendor/bin/sail composer setup
 curl -i http://localhost:8020/up
+curl -i http://localhost:8020/api/v1/ping
 ```
 
 `--wait` returns once PostgreSQL has finished its first start. `composer setup` installs the dependencies, generates the app key, migrates and seeds the dev database (`awez_eh`), and migrates the `testing` database next to it.
@@ -33,6 +34,7 @@ sail up -d                  # app (http://localhost:8020), PostgreSQL + PostGIS,
 sail composer dev           # queue worker and logs
 sail composer check         # the gate: Pint, Rector, Larastan, Pest (unit + feature + arch)
 sail composer test          # Pest unit + feature + arch, in parallel
+sail composer test:mutate   # mutation testing of money code
 sail composer fmt           # Rector + Pint (writes)
 sail artisan migrate:fresh --seed
 ```

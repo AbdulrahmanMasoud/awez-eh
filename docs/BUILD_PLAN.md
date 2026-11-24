@@ -31,7 +31,7 @@ Tick a box only after its verification has been run and passed. A step without a
         - GitHub Actions runs each part of `composer check` as its own step on every push and pull request, with PostgreSQL + PostGIS and Redis services.
         - `README.md` explains how to start the project with Sail.
     - Verify: fresh clone → `sail up -d` → `sail composer setup` → `GET /up` is 200; `sail composer check` green; `migrate:fresh --seed`, rollback and migrate again succeed; a throwaway violating class fails the arch tests.
-- [ ] **1.2 Core support.** (task 002)
+- [x] **1.2 Core support.** (task 002)
     - Acceptance:
         - `AppServiceProvider`: strict models outside production, `CarbonImmutable` dates, and in production destructive database commands prohibited and HTTPS forced. `app.timezone` stays UTC; `awez.display_timezone` is `Africa/Cairo` for presentation.
         - `App\Exceptions\DomainException` (error code, translation key, HTTP status, private context). Every response under `/api/*` uses one JSON error shape `{message, code, errors}`: domain errors with their own code and status (not reported), `validation_failed` 422, `unauthenticated` 401, `forbidden` 403, `not_found` 404 (never naming the model or id), `too_many_requests` 429, and `server_error` 500 with no trace outside `local`. Messages in `lang/ar` and `lang/en`.
