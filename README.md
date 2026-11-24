@@ -11,12 +11,12 @@ git clone git@github.com:AbdulrahmanMasoud/awez-eh.git && cd awez-eh
 cp .env.example .env
 # Once, on a fresh clone: Sail itself lives in vendor/, so the first install runs in Composer's image.
 docker run --rm -v "$(pwd):/app" -w /app composer:2 composer install
-vendor/bin/sail up -d
+vendor/bin/sail up -d --wait
 vendor/bin/sail composer setup
 curl -i http://localhost:8020/up
 ```
 
-`composer setup` installs the dependencies, generates the app key, migrates and seeds the dev database (`awez_eh`), and migrates the `testing` database next to it.
+`--wait` returns once PostgreSQL has finished its first start. `composer setup` installs the dependencies, generates the app key, migrates and seeds the dev database (`awez_eh`), and migrates the `testing` database next to it.
 
 The host ports come from `.env` (`APP_PORT=8020`, `FORWARD_DB_PORT=5452`, `FORWARD_REDIS_PORT=6399`), so the stack runs beside other projects. On Apple silicon the PostGIS image runs emulated: it is published for amd64 only.
 

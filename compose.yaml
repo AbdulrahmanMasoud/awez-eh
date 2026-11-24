@@ -41,15 +41,21 @@ services:
             - './docker/pgsql/create-testing-database.sh:/docker-entrypoint-initdb.d/10_postgis.sh'
         networks:
             - sail
+        # Over TCP: while the first start runs the init scripts, PostgreSQL listens on its socket only,
+        # so a socket check would report it ready too early. `sail up -d --wait` waits for this.
         healthcheck:
             test:
                 - CMD
                 - pg_isready
                 - '-q'
+                - '-h'
+                - '127.0.0.1'
                 - '-d'
                 - '${DB_DATABASE}'
                 - '-U'
                 - '${DB_USERNAME}'
+            start_period: 120s
+            start_interval: 1s
             retries: 3
             timeout: 5s
     redis:
