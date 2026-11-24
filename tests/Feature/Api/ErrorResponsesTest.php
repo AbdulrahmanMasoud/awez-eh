@@ -89,6 +89,17 @@ it('renders validation errors keyed by field', function (): void {
         ->and($response->json('message'))->toBe(__('errors.validation_failed', [], 'ar'));
 });
 
+it('writes the validation message of each field in the language the client asks for', function (string $language, string $required, string $integer): void {
+    $response = $this->postJson('/api/errors/validation', ['age' => 'old'], ['Accept-Language' => $language]);
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('errors.name.0', $required)
+        ->assertJsonPath('errors.age.0', $integer);
+})->with([
+    'Arabic' => ['ar', 'حقل name مطلوب.', 'يجب أن يكون حقل age عددًا صحيحًا.'],
+    'English' => ['en', 'The name field is required.', 'The age field must be an integer.'],
+]);
+
 it('renders a missing sign-in as 401', function (): void {
     expectApiError($this->getJson('/api/errors/unauthenticated'), 401, 'unauthenticated');
 });
