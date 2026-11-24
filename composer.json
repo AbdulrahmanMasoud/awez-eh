@@ -6,6 +6,7 @@
     "license": "proprietary",
     "require": {
         "php": "^8.5",
+        "brick/money": "^0.15.2",
         "laravel/framework": "^13.43",
         "laravel/sanctum": "^4.5",
         "laravel/tinker": "^3.0"
@@ -68,6 +69,10 @@
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
             "pest --parallel --testsuite=Unit,Feature,Arch"
+        ],
+        "test:mutate": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -d pcov.enabled=1 -d pcov.directory=app vendor/bin/pest --mutate --parallel --testsuite=Unit,Feature --min=100"
         ],
         "check": [
             "Composer\\Config::disableProcessTimeout",
