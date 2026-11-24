@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 
 arch('every class declares strict types')
@@ -37,3 +38,13 @@ arch('jobs are queued')
     ->expect(['App\Jobs', ...domainLayerNamespaces('Jobs')])
     ->classes()
     ->toImplement(ShouldQueue::class);
+
+arch('form requests are final form requests')
+    ->expect('App\Http\Requests')
+    ->classes()
+    ->toBeFinal()
+    ->toExtend(FormRequest::class);
+
+arch('support code depends on no domain, HTTP or admin code')
+    ->expect('App\Support')
+    ->not->toUse(['App\Domains', 'App\Http', 'App\Filament']);
