@@ -9,9 +9,9 @@ Tick a box only after its verification has been run and passed. A step without a
 ## Phase 0 — Outside the code (start now, it takes time)
 
 - [ ] Firebase project with Cloud Messaging; a service account for the backend
-- [ ] An Egyptian SMS provider chosen and an account opened (sender name registration takes time)
+- [ ] Google Sign-In (Google Cloud OAuth client) and Sign in with Apple (Apple Developer account), both free
+- [ ] Before launch: the WhatsApp Business number used to confirm phone numbers (ADR 0003)
 - [ ] Cloudflare account with an R2 bucket
-- [ ] Google Maps API key (later, for the app)
 - [ ] A VPS for production
 - [ ] A lawyer's review of the brokerage agreement and the commission terms
 - [ ] The first data: 100 places and craftsmen, 30 properties, Sadat City's districts
@@ -33,7 +33,7 @@ Tick a box only after its verification has been run and passed. A step without a
     - Verify: fresh clone → `sail up -d` → `sail composer setup` → `GET /up` is 200; `sail composer check` green; `migrate:fresh --seed`, rollback and migrate again succeed; a throwaway violating class fails the arch tests.
 - [ ] **1.2 Core support.** `AppServiceProvider` defaults (strict models, `CarbonImmutable`, destructive commands prohibited and HTTPS forced in production), `DomainException` with one JSON error shape for `/api/*`, `MoneyCast` on `brick/money` (EGP piasters), `PhoneNumber` for Egyptian mobile numbers with `mask()`, `ArabicNormalizer`, a `request_id` in every log line, Arabic as the default locale, `/api/v1` route group with `Accept-Language`.
 - [ ] **1.3 Data model.** Migrations, enums, models and factories for every table in `docs/ARCHITECTURE.md` §3, with their indexes (GiST for geography, GIN trigram for searched text). A seeder with Sadat City and its districts, trades and place categories, and demo content.
-- [ ] **1.4 Sign-in.** OTP by SMS (driver interface, a log driver for local, rate limits per number and per IP), Sanctum tokens per device, `device_tokens`, sign-out, account deletion, user roles.
+- [ ] **1.4 Sign-in.** Sign in with Google and Apple (verified server-side from their ID tokens), a phone-verification interface with a `log` driver for local development and tests (rate limits per number and per IP), Sanctum tokens per device, `device_tokens`, sign-out, account deletion, user roles. No paid SMS (ADR 0003).
 - [ ] **1.5 Admin panel foundation.** Filament with RTL Arabic, admin sign-in with 2FA, admin roles (`spatie/laravel-permission` + Filament Shield), activity log, resources for cities, districts, trades, categories and users.
 
 ## Phase 2 — The first version (what residents need on launch day)
@@ -62,6 +62,7 @@ Tick a box only after its verification has been run and passed. A step without a
 - [ ] **4.1 Advertiser statistics** (views, calls, messages) and featured listings.
 - [ ] **4.2 Craftsman mode** (availability, accepting urgent jobs).
 - [ ] **4.3 Commissions** in Filament: agreements, leads per listing, commission entries.
+- [ ] **4.3b Phone confirmation by WhatsApp**: the resident sends a pre-filled code to our WhatsApp number; the webhook confirms the number (ADR 0003).
 - [ ] **4.4 Production**: Dockerfile, deployment, backups, error tracking (Sentry), API docs published.
 
 ## Phase 5 — Growth (after launch)

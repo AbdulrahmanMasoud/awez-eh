@@ -24,7 +24,7 @@ Public listing pages (later)┘          │
                                        ├── PostgreSQL 18 + PostGIS + pg_trgm
                                        ├── Redis (cache, queues)
                                        ├── Cloudflare R2 (images, two sizes)
-                                       ├── SMS provider (OTP)
+                                       ├── Google and Apple sign-in, WhatsApp Cloud API (phone confirmation)
                                        └── Firebase Cloud Messaging (push)
 ```
 
@@ -55,7 +55,7 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 ## 4. Identity and access
 
-- Sign-in is by Egyptian mobile number and a one-time code sent by SMS (ADR 0003). No passwords for app users.
+- Sign-in is with Google or Apple; the phone number is confirmed by a code the resident sends us on WhatsApp, with a `log` driver during development (ADR 0003). No passwords and no paid SMS.
 - A verified code issues a Sanctum personal access token, named after the device. Tokens are revoked on sign-out and on account deletion.
 - Roles: every user is a resident; a user may also be an advertiser (owns listings or places) and a provider (craftsman). Admins sign in to Filament with email, password and two-factor authentication, and hold admin roles (`super_admin`, `moderator`, `data_entry`, `sales`).
 - Ownership is enforced by Policies (ADR 0002).
@@ -67,6 +67,7 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 ## 6. Search and location
 
 - Text search goes through Scout with the database driver, on columns normalized by `ArabicNormalizer`, backed by `pg_trgm` GIN indexes for typo tolerance.
+- Maps in the app use MapLibre with OpenStreetMap tiles from OpenFreeMap; residents pick a location by dropping a pin, so no paid geocoding is needed (ADR 0005).
 - Locations are `geography(Point, 4326)` with GiST indexes. "Near me" and urgent dispatch use `ST_DWithin` and order by `ST_Distance`.
 
 ## 7. Commission protection
@@ -75,7 +76,7 @@ For a listing with `brokered = true`, the API never returns the owner's phone nu
 
 ## 8. Notifications
 
-Laravel Notifications with the `database` and `fcm` channels; SMS for codes only. Topics per city and district for broadcasts (the duty pharmacy, city news). Sending happens in queued jobs.
+Laravel Notifications with the `database` and `fcm` channels; no SMS. Topics per city and district for broadcasts (the duty pharmacy, city news). Sending happens in queued jobs.
 
 ## 9. API conventions
 
