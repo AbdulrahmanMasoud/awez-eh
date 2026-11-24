@@ -15,7 +15,7 @@ Laravel Boost is installed for development. Use its documentation search to conf
 Everything runs inside Sail (`sail` is `vendor/bin/sail`; ADR 0004). Host PHP is not used.
 
 ```bash
-sail up -d                  # app (http://localhost:8000), PostgreSQL + PostGIS, Redis
+sail up -d                  # app (http://localhost:8020), PostgreSQL + PostGIS, Redis
 sail composer dev           # queue worker and logs
 sail composer check         # THE gate: pint --test, rector --dry-run, phpstan, pest (unit + feature + arch)
 sail composer test          # pest unit + feature + arch, parallel

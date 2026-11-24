@@ -1,0 +1,97 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# The services below stand in for Sail's: the same PostGIS image, and Redis. These variables
+# win over the .env copied from .env.example, whose hosts are Sail's container names.
+env:
+  DB_HOST: 127.0.0.1
+  DB_PORT: 5432
+  DB_USERNAME: sail
+  DB_PASSWORD: password
+  REDIS_HOST: 127.0.0.1
+  REDIS_PORT: 6379
+
+jobs:
+  check:
+    name: composer check
+    runs-on: ubuntu-latest
+
+    services:
+      pgsql:
+        image: postgis/postgis:18-3.7
+        env:
+          POSTGRES_USER: sail
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sail -d testing"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5'
+          extensions: pgsql, pdo_pgsql, redis, intl, bcmath, pcntl
+          tools: composer:v2
+          coverage: none
+
+      - name: Find Composer's cache folder
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      # Every check below runs even when an earlier one fails, so one push reports every
+      # broken tool. They only need this step to succeed.
+      - name: Prepare application
+        id: prepare
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Pint
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' }}
+        run: composer lint:check
+
+      - name: Rector
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' }}
+        run: composer rector:check
+
+      - name: Larastan
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' }}
+        run: composer analyse
+
+      - name: Pest (unit, feature, arch)
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' }}
+        run: composer test

@@ -18,7 +18,7 @@ Tick a box only after its verification has been run and passed. A step without a
 
 ## Phase 1 — Foundation
 
-- [ ] **1.1 Project skeleton and quality gate.** (task 001)
+- [x] **1.1 Project skeleton and quality gate.** (task 001)
     - Acceptance:
         - A fresh Laravel 13 application (latest stable, no starter kit: this is an API and a Filament panel) at the repository root, keeping the existing `docs/`, `CLAUDE.md`, `DECISIONS.md` and `PROGRESS.md`.
         - Laravel Sail with PHP 8.5, PostgreSQL 18 with PostGIS (an official `postgis/postgis` image for PostgreSQL 18), and Redis. Every host port comes from `.env`, so the stack runs beside other local projects.

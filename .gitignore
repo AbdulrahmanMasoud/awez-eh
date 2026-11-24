@@ -1,3 +1,47 @@
+# Task worktrees (docs/tasks/README.md)
 .worktrees/
-.env
+
+# Dependencies and builds
+/node_modules
 /vendor
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+
+# Environment and keys
+.env
+.env.backup
+.env.production
+/auth.json
+/storage/*.key
+/storage/pail
+
+# Tests and tools
+/.phpunit.cache
+.phpunit.result.cache
+_ide_helper.php
+*.log
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.phpactor.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+Homestead.json
+Homestead.yaml
+
+# AI tooling that Laravel Boost generates per developer (CLAUDE.md is ours and committed)
+/.agents
+/.claude
+/.codex
+/.cursor
+/.junie
+/.mcp.json
+/AGENTS.md
+/boost.json
+/opencode.json
