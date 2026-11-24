@@ -10,7 +10,7 @@ The owner and Claude (on claude.ai) plan the work here. Claude Code carries it o
 | #   | Task                                                                   | Status | PR  |
 | --- | ---------------------------------------------------------------------- | ------ | --- |
 | 001 | [Project skeleton and quality gate (BUILD_PLAN 1.1)](001-project-skeleton.md) | done   | #1  |
-| 002 | [Core support (BUILD_PLAN 1.2)](002-core-support.md)                          | review | #3  |
+| 002 | [Core support (BUILD_PLAN 1.2)](002-core-support.md)                          | done   | #3  |
 
 The statuses are `planned` (no brief yet, do not start), `ready`, `in progress`, `review` (the PR is open and the report is written), `done` (merged) and `dropped`.
 
