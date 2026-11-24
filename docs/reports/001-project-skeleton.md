@@ -27,13 +27,11 @@
 
 ## The owner's steps
 
-1. **Before merging, commit the planner's doc changes** that are uncommitted in the main checkout (`CLAUDE.md`, `DECISIONS.md`, `ARCHITECTURE.md`, `BUILD_PLAN.md`, `OPEN_QUESTIONS.md`, ADRs 0003 and 0005).
-    - This PR's `DECISIONS.md` entries start at 9, after the planner's 7 and 8.
-    - If those changes reach `main` first, PR #1 shows a small conflict at the end of `DECISIONS.md`: keep both sides.
-    - The brief (`docs/tasks/001-project-skeleton.md`) is already in this PR exactly as the planner left it.
+1. **Merge #2 (sign-in with Google and Apple, maps on OpenStreetMap) first, then this PR.**
+    - Both carry the same `DECISIONS.md` (entries 1–18) and the same brief, so they merge without conflicts in either order.
+    - #2 first keeps `main` consistent: this PR's brief and its entries 9–18 build on #2's entries 7 and 8.
 2. **After merging, in the main checkout:**
-    - Run `git checkout -- docs/tasks/001-project-skeleton.md` if it is still uncommitted there; the PR carries the same text. Then `git pull`.
-    - Follow README › Getting started.
+    - `git pull`, then follow README › Getting started.
     - To use Boost there, run `vendor/bin/sail artisan boost:install --skills --mcp`. Its files are git-ignored, as in SellBubble.
 3. The first `sail up` builds the PHP 8.5 Sail image, which took about 10 minutes here. Later starts reuse it.
 
@@ -120,3 +118,10 @@ Nothing is deployed yet.
 
 - Runtime: `laravel/framework` 13.43.0, `laravel/sanctum` 4.5.0, `laravel/tinker` 3.2.0.
 - Development only: `pestphp/pest` 5.3.7 (PHPUnit 13.4.7), `pestphp/pest-plugin-laravel` 5.0.1, `larastan/larastan` 3.15.0 (PHPStan 2.3.7), `rector/rector` 2.8.5, `driftingly/rector-laravel` 2.7.3, `laravel/pint` 1.32.3, `laravel/boost` 2.10.4, `laravel/sail` 1.71.0, `laravel/pail` 1.3.0, `laravel/pao` 1.1.6.
+
+## Update (2026-11-24)
+
+- `DECISIONS.md` now matches #2 byte for byte: entries 1–8 from the owner's doc changes (#2), then this task's 9–18.
+    - Before this, the two PRs conflicted at the end of the file in either merge order: both rewrote the end of the same list.
+    - Checked with `git merge-tree` on the pushed branches, in both orders.
+- The owner's steps 1 and 2 above are updated to match: merge #2 first.
