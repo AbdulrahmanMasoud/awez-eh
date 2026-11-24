@@ -27,7 +27,9 @@ final class PlaceFactory extends Factory
 
     public function definition(): array
     {
-        $phone = PhoneNumber::from(SadatCity::mobileNumber($this->faker));
+        $mobile = PhoneNumber::from(SadatCity::mobileNumber($this->faker));
+        // Many shops and pharmacies publish a landline; WhatsApp is always on a mobile.
+        $phone = fake()->boolean(40) ? PhoneNumber::fromMobileOrLandline(SadatCity::landlineNumber($this->faker)) : $mobile;
 
         return [
             'user_id' => User::factory(),
@@ -39,7 +41,7 @@ final class PlaceFactory extends Factory
                 'مفتوح طول أيام الأسبوع.',
             ]),
             'phone' => $phone,
-            'whatsapp' => fake()->boolean(70) ? $phone : null,
+            'whatsapp' => fake()->boolean(70) ? $mobile : null,
             'city_id' => City::factory(),
             'district_id' => fn (array $attributes): DistrictFactory => District::factory()->state(['city_id' => $attributes['city_id']]),
             'address_note' => fake()->optional(0.7)->randomElement(['في السوق التجاري', 'على الشارع الرئيسي', 'بجوار البنك الأهلي']),

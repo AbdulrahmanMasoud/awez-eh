@@ -17,21 +17,15 @@
 
 ## Decisions for the owner
 
-1. **Search and short words** (DECISIONS 39). At the 0.25 threshold you accepted, a search term that begins like a two-letter word matches every text that contains that word. Arabic text is full of such words, so `منزل` would match every listing with `من` (scored 0.333), `فيللا` every listing with `في` (0.286), and `علاج` every text with `على` (0.286). Two ways out:
-    - **leave words under three letters out** of the stored search text and of the search term, keeping the threshold. Typos are still forgiven; a search for a two-letter word finds nothing.
-    - **raise the threshold to 0.34.** Short words stop matching, but so does the common typo with two letters swapped (0.27).
+Six of the seven are answered (see the update at the end):
 
-    Nothing changes until step 2.6, where search is built. The first is the one I would pick.
-2. **Search speed** (DECISIONS 39). The GIN index makes a typo-tolerant search 16 times faster (187 ms against 2,932 ms for 20,030 listings), but PostgreSQL does not use it unless it is told that the comparison is expensive (`ALTER FUNCTION … COST 100`, one statement in a migration). That statement needs the database's owner. On our own server that is us; a managed database might refuse it, and then step 2.6 needs another way. This decision is needed before choosing where production runs (step 4.4).
-3. **Deleting an account deletes the resident's content** (DECISIONS 41), as the brief says. That includes a brokered property and its agreement, and later the leads behind your commission. At step 1.4 the choice is:
-    - refuse to delete an account while it owns a brokered listing (the resident is asked to contact you first);
-    - or keep those rows and blank the owner's name.
-
-    Today nothing deletes accounts, so nothing is lost meanwhile.
-4. **Who sees a reply to a request** (DECISIONS 46). Done now: only the resident who asked and the one who replied. The other way, replies visible to everyone, lets residents compare offers in public, and lets competitors undercut each other. Say if you want that instead.
-5. **Places' phone numbers** (DECISIONS 45). As the brief says, a place's phone and WhatsApp accept Egyptian mobile numbers only, so a pharmacy's landline (`048 …`) is refused. Accepting landlines is a small change to `PhoneNumber`, in its own step; say if places should be able to list one.
-6. **Icons** (DECISIONS 44). Trades and place categories name their icon from Lucide (`wrench`, `pill`, `shopping-cart`, ...), the stroke set closest to the admin panel's. The mobile app will need to ship Lucide, or to map these names to its own set.
-7. **The districts** (DECISIONS 43, OPEN_QUESTIONS 3). The seeder has the seven districts the brief names, without centres. Please send the full list, and a point for each district's centre if you can (a pin on a map is enough).
+1. **Search and short words:** words under three letters are left out of the search text and of search terms. Recorded; step 2.6 implements it.
+2. **Search speed:** we host PostgreSQL ourselves, so the `COST` statement is fine. Recorded; it lands with step 2.6.
+3. **Deleting an account** closes its brokered listings and keeps them, with their agreements and leads, and blanks the owner's personal data. Recorded; step 1.4 implements it.
+4. **Replies to requests** stay private.
+5. **Places' phone numbers** accept Egyptian landlines too: done in this task.
+6. **Icons:** Lucide.
+7. **The districts:** still open. Please send the full list, and a point for each district's centre if you can (a pin on a map is enough). DECISIONS 43, OPEN_QUESTIONS 3.
 
 ## The owner's steps
 
@@ -366,3 +360,31 @@ The scan and the last plan found the same 1,335 published rows: copies of the tw
 - **Reference data:** on deploy, `php artisan db:seed --force`. In production it seeds only the reference data, and can run on every deploy. Never run `DemoContentSeeder` there; it refuses anyway.
 - **The morph map:** Sanctum tokens now store `user` as their type. Nothing is deployed, so no stored row needs changing.
 - **No new packages.**
+
+## Update (2026-11-24)
+
+The owner answered the decisions. What changed:
+
+- **Recorded for later steps,** in `DECISIONS.md` and in the steps of `docs/BUILD_PLAN.md` that will carry them out:
+    - entry 39, for step 2.6: words under three letters are left out of the search text and of search terms, with the threshold kept at 0.25, and a migration prices the trigram operator at its real cost. That is possible because PostgreSQL is self-hosted;
+    - entry 41, for step 1.4: deleting an account closes the resident's brokered listings and keeps them, with their agreements and leads, and blanks the resident's personal data. This task's `properties.user_id` deletes every property with its account, so step 1.4 also changes that for brokered ones; the entry names the two ways.
+- **Settled:** replies stay private (entry 46), and icons are Lucide (entry 44).
+- **Done now: places accept Egyptian landlines** (entry 45).
+    - `PhoneNumber::fromMobileOrLandline()` reads a landline typed the usual ways, Arabic-Indic digits included. Cairo and Giza (02) have 8 digits after the area code; Alexandria (03) and the governorates' codes (048 for Menoufia and Sadat City) have 7. It masks a landline as it masks a mobile (`048****678`).
+    - `PhoneNumber::from()` is unchanged: residents' numbers, and anything a WhatsApp message goes to, stay mobile-only.
+    - A place's `phone` takes a landline; its WhatsApp stays a mobile. Tell me if a shop's WhatsApp should take a landline too: it is a one-word change to the cast.
+    - Logs mask landlines written as text, as they already did for mobiles.
+    - Not accepted: five-digit hotlines (19011), parentheses around the area code, and the old 015 code of the 10th of Ramadan, because ten digits starting with 015 are a WE mobile number missing a digit.
+    - The demo city gives about 40% of places a 048 landline.
+- **Still open:** the districts (decision 7).
+
+The area codes come from Wikipedia's "Telephone numbers in Egypt" (edited 17 November 2026). It cites no plan from NTRA, so the source is secondhand. A real number refused by mistake is fixed by adding its code to `PhoneNumber::LANDLINE_DIGITS`.
+
+**Verification.** The new tests ran red first: 41 of the 85 phone, cast, log and place tests failed, because neither the methods nor the cast option existed yet. Then:
+
+- `sail composer check`: Pint passed, Rector made 0 changes, Larastan found 0 errors. Pest: **481 tests, 1,131 assertions**, up from 445 and 1,065.
+- Tests added (36):
+    - `PhoneNumber`: 29. Landlines typed seven ways, seven areas with their lengths, mobiles still accepted, `from()` still refusing a landline, ten numbers refused, and three masks.
+    - `PhoneNumberCast`: 4. A landline stored and read; a landline refused in a mobile-only column, written or stored; an unknown option refused.
+    - Logs: 1, landlines written as text are masked.
+    - Places: 2, a landline stored in E.164 and read back, and a landline refused for WhatsApp.

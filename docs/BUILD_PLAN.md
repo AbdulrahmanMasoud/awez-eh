@@ -55,7 +55,7 @@ Tick a box only after its verification has been run and passed. A step without a
         - Architecture tests: models live only in `App\Domains\*\Models`, are final, use `HasUuids` and declare their fillable attributes; every model with a `user_id` has a policy.
     - Verify: `sail composer check` green; on `testing`, `migrate:fresh --seed` (timed, under a minute), `migrate:rollback --step=<this step's migrations>` and `migrate` again; `\d properties`; an `EXPLAIN` of "published properties within 2 km, nearest first" using the GiST index and of a trigram search using the GIN index; row counts per table after seeding; ownership proven at the policy level for every user-owned table.
 - [ ] **1.3b Data model: interaction and business.** (task 004, planned) Conversations, messages, bookings, booking events, reviews, favorites, search alerts, notifications, leads, commission entries, featured packages and placements, city guide.
-- [ ] **1.4 Sign-in.** Sign in with Google and Apple (verified server-side from their ID tokens), a phone-verification interface with a `log` driver for local development and tests (rate limits per number and per IP), Sanctum tokens per device, `device_tokens`, sign-out, account deletion, user roles. No paid SMS (ADR 0003).
+- [ ] **1.4 Sign-in.** Sign in with Google and Apple (verified server-side from their ID tokens), a phone-verification interface with a `log` driver for local development and tests (rate limits per number and per IP), Sanctum tokens per device, `device_tokens`, sign-out, account deletion, user roles. No paid SMS (ADR 0003). Deleting an account closes the resident's brokered listings and keeps them, with their agreements and leads, and blanks the resident's personal data (DECISIONS 41).
 - [ ] **1.5 Admin panel foundation.** Filament with RTL Arabic, admin sign-in with 2FA, admin roles (`spatie/laravel-permission` + Filament Shield), activity log, resources for cities, districts, trades, categories and users.
 
 ## Phase 2 — The first version (what residents need on launch day)
@@ -65,7 +65,7 @@ Tick a box only after its verification has been run and passed. A step without a
 - [ ] **2.3 Services API.** Providers by trade, rating and availability; profile with prices and work photos; verification in Filament.
 - [ ] **2.4 Places API.** Restaurants, shops, pharmacies; items, offers, opening hours, "open now".
 - [ ] **2.5 Marketplace API.** Second-hand items by category, negotiable flag.
-- [ ] **2.6 Search.** Scout on the database driver across all areas, Arabic normalization, typo tolerance, "near me".
+- [ ] **2.6 Search.** Scout on the database driver across all areas, Arabic normalization, typo tolerance, "near me". Words under three letters are left out of `search_text` and of search terms, and a migration prices the trigram operator's function at its real cost (DECISIONS 39).
 - [ ] **2.7 Requests.** Create a request, matching advertisers see it, replies, views count.
 - [ ] **2.8 Chat.** Conversations and messages through the API (polling first), leads recorded for brokered listings.
 - [ ] **2.9 Favorites, reports and blocking.**

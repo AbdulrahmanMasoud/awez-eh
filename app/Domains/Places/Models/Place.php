@@ -118,7 +118,8 @@ final class Place extends Model
     protected function casts(): array
     {
         return [
-            'phone' => PhoneNumberCast::class,
+            // A place may publish a landline; its WhatsApp is a mobile.
+            'phone' => PhoneNumberCast::class.':'.PhoneNumberCast::LANDLINES,
             'whatsapp' => PhoneNumberCast::class,
             'location' => PointCast::class,
             'delivers' => 'boolean',

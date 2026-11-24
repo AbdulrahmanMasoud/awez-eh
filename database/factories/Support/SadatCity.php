@@ -45,6 +45,14 @@ final class SadatCity
     }
 
     /**
+     * A landline in Menoufia, Sadat City's governorate (048 and seven digits).
+     */
+    public static function landlineNumber(Generator $faker): string
+    {
+        return '048'.$faker->numberBetween(2, 9).$faker->numerify('######');
+    }
+
+    /**
      * An Egyptian mobile number, random but valid.
      */
     public static function mobileNumber(Generator $faker): string
