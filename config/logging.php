@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Support\Logging\RedactLogs;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -65,6 +67,17 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [RedactLogs::class],
+        ],
+
+        // One JSON object per line, with Laravel's Context (the request_id) under `extra`.
+        'json' => [
+            'driver' => 'single',
+            'path' => env('LOG_JSON_PATH', storage_path('logs/laravel.json')),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'formatter' => JsonFormatter::class,
+            'replace_placeholders' => true,
+            'tap' => [RedactLogs::class],
         ],
 
         'daily' => [
@@ -73,6 +86,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'tap' => [RedactLogs::class],
         ],
 
         'monthly' => [
@@ -113,6 +127,7 @@ return [
             ],
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'processors' => [PsrLogMessageProcessor::class],
+            'tap' => [RedactLogs::class],
         ],
 
         'syslog' => [
