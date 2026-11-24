@@ -13,7 +13,11 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        // A test that reaches a real service by mistake fails instead of sending an SMS or a push.
+        // A test that reaches a real service by mistake fails instead of sending a message or a push.
         Http::preventStrayRequests();
+
+        // Symfony's test requests claim `Accept-Language: en-us` unless told otherwise. Send none,
+        // as a client that sets no language, so the API's default locale is what tests see.
+        $this->withHeader('Accept-Language', '');
     }
 }
