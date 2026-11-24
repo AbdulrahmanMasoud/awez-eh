@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+it('answers in the language the client prefers, Arabic otherwise', function (?string $acceptLanguage, string $locale): void {
+    $headers = $acceptLanguage === null ? [] : ['Accept-Language' => $acceptLanguage];
+
+    $this->getJson('/api/v1/ping', $headers)
+        ->assertOk()
+        ->assertHeader('Content-Language', $locale)
+        ->assertJsonPath('data.locale', $locale);
+})->with([
+    'no header' => [null, 'ar'],
+    'Arabic' => ['ar', 'ar'],
+    'Egyptian Arabic' => ['ar-EG', 'ar'],
+    'English' => ['en', 'en'],
+    'American English' => ['en-US,en;q=0.9', 'en'],
+    'an unsupported language' => ['fr', 'ar'],
+    'an unsupported language first' => ['fr-FR, en;q=0.8', 'en'],
+    'weights that prefer English' => ['ar;q=0.4, en;q=0.9', 'en'],
+    'anything' => ['*', 'ar'],
+    'nonsense' => ['%%%', 'ar'],
+]);
+
+it('sets the language on API errors too', function (): void {
+    $this->get('/api/v1/nowhere', ['Accept-Language' => 'en'])
+        ->assertNotFound()
+        ->assertHeader('Content-Language', 'en')
+        ->assertJsonPath('message', __('errors.not_found', [], 'en'));
+});
+
+it('makes Arabic the default locale', function (): void {
+    expect(config('app.locale'))->toBe('ar')
+        ->and(config('app.fallback_locale'))->toBe('en');
+});

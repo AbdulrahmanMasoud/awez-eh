@@ -19,6 +19,7 @@ sail up -d                  # app (http://localhost:8020), PostgreSQL + PostGIS,
 sail composer dev           # queue worker and logs
 sail composer check         # THE gate: pint --test, rector --dry-run, phpstan, pest (unit + feature + arch)
 sail composer test          # pest unit + feature + arch, parallel
+sail composer test:mutate   # mutation testing of money code (score 100), run when it changes
 sail composer fmt           # pint + rector (writes)
 sail artisan migrate:fresh --seed
 ```
@@ -126,6 +127,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 - **Pest 5.** `tests/Unit` (pure), `tests/Feature` (HTTP, jobs, DB), `tests/Arch` (rules).
 - Feature tests use the real PostgreSQL from Docker with PostGIS. Never SQLite.
+- API tests see the default locale (Arabic) unless they send `Accept-Language`.
 - `Http::preventStrayRequests()` is on for all tests. Google, Apple, WhatsApp, FCM and storage are faked.
 - Use factories, never hand-built rows. A bug fix starts with a failing test.
 - Run the tests after formatting, not only before.
@@ -139,6 +141,8 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 - `App\Domains` does not use `App\Http` or `App\Filament`.
 - Controllers do not use the `DB` facade and return API Resources.
 - Jobs implement `ShouldQueue`.
+- Form Requests are final and extend `FormRequest`.
+- `App\Support` does not depend on `App\Domains`, `App\Http` or `App\Filament`.
 
 ## Git
 
