@@ -16,7 +16,7 @@ final class DatabaseSeeder extends Seeder
 
         // Made-up residents and listings: never in production, nor anywhere real people look.
         if (App::environment(DemoContentSeeder::ENVIRONMENTS)) {
-            $this->call([DemoContentSeeder::class, DemoInteractionSeeder::class]);
+            $this->call([DemoContentSeeder::class, DemoInteractionSeeder::class, DemoAdminSeeder::class]);
         }
     }
 }

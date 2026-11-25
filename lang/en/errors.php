@@ -17,4 +17,6 @@ return [
     'verification_code_invalid' => 'The confirmation code is not correct.',
     'verification_code_expired' => 'The confirmation code has expired. Ask for a new one.',
     'phone_taken' => 'This number is confirmed on another account.',
+    'last_super_admin' => 'At least one super admin must remain.',
+    'account_not_active' => 'That account is suspended or deleted. Reactivate it first.',
 ];

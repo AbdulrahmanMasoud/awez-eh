@@ -124,9 +124,9 @@ it('seeds the demo content the brief asks for in local and testing', function ()
         ->and(RequestReply::query()->count())->toBeGreaterThanOrEqual(20)
         ->and(Report::query()->count())->toBeGreaterThanOrEqual(3)
         // 30 residents own the content; each of the 40 craftsmen has an account of their own; one
-        // member of staff answers for the platform.
-        ->and(User::query()->whereDoesntHave('provider')->count())->toBe(31)
-        ->and(User::query()->count())->toBe(71);
+        // member of staff answers for the platform; one demo admin (admin@awez.test).
+        ->and(User::query()->whereDoesntHave('provider')->count())->toBe(32)
+        ->and(User::query()->count())->toBe(72);
 
     foreach ([Property::class, Provider::class, Place::class, UsedItem::class] as $model) {
         expect($published($model))->toBeGreaterThan(0.6)->toBeLessThan(1.0);

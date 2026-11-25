@@ -1,0 +1,61 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ * Awez Eh's admin theme (docs/design/ADMIN_PANEL.md). Colours come from the panel provider's
+ * colour map; this file carries what the map cannot: the background, the radii and the dark
+ * stat card. Filament's components are used as they are.
+ */
+@theme {
+    --radius-md: 0.375rem;   /* badges: 6px */
+    --radius-lg: 0.625rem;   /* buttons and inputs: 10px */
+    --radius-xl: 1rem;       /* cards and sections: 16px */
+}
+
+:root {
+    --awez-ink: #14201a;
+    --awez-background: #f5f7f4;
+    --awez-border: #e3e9e4;
+    --awez-accent: #ffc93c;
+}
+
+.fi-body {
+    background-color: var(--awez-background);
+    color: var(--awez-ink);
+}
+
+.fi-section,
+.fi-wi-stats-overview-stat,
+.fi-ta-ctn {
+    border-color: var(--awez-border);
+}
+
+/* The review queue's card: dark, with the accent on its description (the oldest item's age). */
+.fi-wi-stats-overview-stat.awez-stat-dark {
+    background-color: var(--awez-ink);
+    border-color: var(--awez-ink);
+}
+
+.fi-wi-stats-overview-stat.awez-stat-dark .fi-wi-stats-overview-stat-label,
+.fi-wi-stats-overview-stat.awez-stat-dark .fi-wi-stats-overview-stat-value {
+    color: #ffffff;
+}
+
+.fi-wi-stats-overview-stat.awez-stat-dark .fi-wi-stats-overview-stat-description {
+    color: var(--awez-accent);
+}
+
+/* A Lucide icon beside its name in the icon select. */
+.awez-icon-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.awez-icon-option__svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+}

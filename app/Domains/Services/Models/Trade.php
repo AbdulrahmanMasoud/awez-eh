@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Domains\Services\Models;
 
 use App\Domains\Requests\Models\ServiceRequest;
+use App\Domains\Services\Policies\TradePolicy;
+use App\Support\Database\LogsAdminChanges;
 use App\Support\Text\HasTranslatedName;
 use Database\Factories\TradeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['name_ar', 'name_en', 'slug', 'icon', 'sort_order', 'is_active'])]
 #[UseFactory(TradeFactory::class)]
+#[UsePolicy(TradePolicy::class)]
 final class Trade extends Model
 {
     /** @use HasFactory<TradeFactory> */
@@ -27,6 +31,7 @@ final class Trade extends Model
 
     use HasTranslatedName;
     use HasUuids;
+    use LogsAdminChanges;
 
     /**
      * @return BelongsToMany<Provider, $this>

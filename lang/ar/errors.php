@@ -17,4 +17,6 @@ return [
     'verification_code_invalid' => 'كود التأكيد غير صحيح.',
     'verification_code_expired' => 'انتهت صلاحية كود التأكيد. اطلب كودًا جديدًا.',
     'phone_taken' => 'هذا الرقم مؤكَّد على حساب آخر.',
+    'last_super_admin' => 'لازم يفضل مدير نظام واحد على الأقل.',
+    'account_not_active' => 'الحساب ده موقوف أو محذوف. فعّله الأول.',
 ];

@@ -7,14 +7,18 @@ namespace App\Providers;
 use App\Domains\Bookings\Models\Booking;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
+use App\Domains\Geography\Models\City;
+use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Places\Models\Place;
+use App\Domains\Places\Models\PlaceCategory;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
+use App\Domains\Services\Models\Trade;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -27,9 +31,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 final class AppServiceProvider extends ServiceProvider
 {
+    private const int MIN_PASSWORD_LENGTH = 12;
+
+    private const int MAX_PASSWORD_LENGTH = 255;
+
     public function register(): void
     {
         //
@@ -54,6 +63,9 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
         $this->enforceMorphMap();
 
+        // Admins' passwords (residents have none): long rather than clever.
+        Password::defaults(fn (): Password => Password::min(self::MIN_PASSWORD_LENGTH)->max(self::MAX_PASSWORD_LENGTH));
+
         // `composer dev` runs the queue worker and the logs: Sail already serves the app on
         // APP_PORT, and there is no frontend to build.
         DevCommands::only('queue', 'logs');
@@ -77,6 +89,11 @@ final class AppServiceProvider extends ServiceProvider
             'message' => Message::class,
             'booking' => Booking::class,
             'review' => Review::class,
+            // Reference data, as the activity log's subjects.
+            'city' => City::class,
+            'district' => District::class,
+            'trade' => Trade::class,
+            'place_category' => PlaceCategory::class,
         ]);
     }
 

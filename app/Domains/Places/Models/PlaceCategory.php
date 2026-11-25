@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Places\Models;
 
+use App\Domains\Places\Policies\PlaceCategoryPolicy;
 use App\Domains\Requests\Models\ServiceRequest;
+use App\Support\Database\LogsAdminChanges;
 use App\Support\Text\HasTranslatedName;
 use Database\Factories\PlaceCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['parent_id', 'name_ar', 'name_en', 'slug', 'icon', 'sort_order', 'is_active'])]
 #[UseFactory(PlaceCategoryFactory::class)]
+#[UsePolicy(PlaceCategoryPolicy::class)]
 final class PlaceCategory extends Model
 {
     /** @use HasFactory<PlaceCategoryFactory> */
@@ -27,6 +31,7 @@ final class PlaceCategory extends Model
 
     use HasTranslatedName;
     use HasUuids;
+    use LogsAdminChanges;
 
     /**
      * @return BelongsTo<self, $this>

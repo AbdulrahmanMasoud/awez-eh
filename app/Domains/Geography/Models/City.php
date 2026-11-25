@@ -6,16 +6,19 @@ namespace App\Domains\Geography\Models;
 
 use App\Domains\CityGuide\Models\GuideEntry;
 use App\Domains\CityGuide\Models\NewsItem;
+use App\Domains\Geography\Policies\CityPolicy;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Places\Models\Place;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Services\Models\Provider;
 use App\Support\Casts\PointCast;
+use App\Support\Database\LogsAdminChanges;
 use App\Support\Text\HasTranslatedName;
 use Database\Factories\CityFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['name_ar', 'name_en', 'slug', 'center', 'is_active'])]
 #[UseFactory(CityFactory::class)]
+#[UsePolicy(CityPolicy::class)]
 final class City extends Model
 {
     /** @use HasFactory<CityFactory> */
@@ -33,6 +37,7 @@ final class City extends Model
 
     use HasTranslatedName;
     use HasUuids;
+    use LogsAdminChanges;
 
     /**
      * @return HasMany<GuideEntry, $this>

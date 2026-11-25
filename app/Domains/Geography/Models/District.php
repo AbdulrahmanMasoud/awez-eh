@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Geography\Models;
 
 use App\Domains\Alerts\Models\SearchAlert;
+use App\Domains\Geography\Policies\DistrictPolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Places\Models\Place;
@@ -12,10 +13,12 @@ use App\Domains\RealEstate\Models\Property;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Services\Models\Provider;
 use App\Support\Casts\PointCast;
+use App\Support\Database\LogsAdminChanges;
 use App\Support\Text\HasTranslatedName;
 use Database\Factories\DistrictFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,8 +28,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * A residential area of a city, as residents name it ("المنطقة السكنية الأولى").
  */
-#[Fillable(['name_ar', 'name_en', 'slug', 'center', 'sort_order'])]
+#[Fillable(['city_id', 'name_ar', 'name_en', 'slug', 'center', 'sort_order'])]
 #[UseFactory(DistrictFactory::class)]
+#[UsePolicy(DistrictPolicy::class)]
 final class District extends Model
 {
     /** @use HasFactory<DistrictFactory> */
@@ -34,6 +38,7 @@ final class District extends Model
 
     use HasTranslatedName;
     use HasUuids;
+    use LogsAdminChanges;
 
     /**
      * Residents who said they live here.

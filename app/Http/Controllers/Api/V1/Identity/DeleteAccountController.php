@@ -23,6 +23,7 @@ final class DeleteAccountController extends Controller
      *
      * @response 204 scenario="deleted"
      * @response 401 scenario="unauthenticated" {"message": "سجّل الدخول أولًا.", "code": "unauthenticated", "errors": {}}
+     * @response 409 scenario="last_super_admin" {"message": "لازم يفضل مدير نظام واحد على الأقل.", "code": "last_super_admin", "errors": {}}
      */
     public function __invoke(DeleteAccountRequest $request, DeleteAccount $deleteAccount): Response
     {
