@@ -35,12 +35,7 @@ final class UpdateProfileRequest extends FormRequest
 
     public function toData(): ProfileChanges
     {
-        return new ProfileChanges(
-            name: $this->has('name') ? $this->string('name')->trim()->toString() : null,
-            locale: $this->has('locale') ? $this->enum('locale', UserLocale::class) : null,
-            changesDistrict: $this->has('district_id'),
-            districtId: $this->filled('district_id') ? $this->string('district_id')->toString() : null,
-        );
+        return ProfileChanges::from($this->validated());
     }
 
     /**

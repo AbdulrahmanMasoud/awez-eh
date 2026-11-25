@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
+use Spatie\LaravelData\Data;
 
 arch('every class declares strict types')
     ->expect(['App', 'Database', 'Tests'])
@@ -25,6 +26,12 @@ arch('actions are final and expose handle()')
     ->classes()
     ->toBeFinal()
     ->toHaveMethod('handle');
+
+arch('data objects are final spatie/laravel-data classes')
+    ->expect(domainLayerNamespaces('Data'))
+    ->classes()
+    ->toBeFinal()
+    ->toExtend(Data::class);
 
 arch('domains do not depend on the HTTP layer or the admin panel')
     ->expect('App\Domains')

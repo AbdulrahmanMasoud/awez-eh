@@ -6,18 +6,19 @@ namespace App\Domains\Identity\Data;
 
 use App\Domains\Identity\Enums\PhoneChallengeMethod;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Data;
 
 /**
  * What the app must do to confirm the number: type a code of `length` digits, or open `link`
- * (a pre-filled WhatsApp message) and poll GET me.
+ * (a pre-filled WhatsApp message) and poll GET me. Made with code() or whatsapp().
  */
-final readonly class PhoneChallenge
+final class PhoneChallenge extends Data
 {
-    private function __construct(
-        public PhoneChallengeMethod $method,
-        public CarbonImmutable $expiresAt,
-        public ?int $length = null,
-        public ?string $link = null,
+    public function __construct(
+        public readonly PhoneChallengeMethod $method,
+        public readonly CarbonImmutable $expiresAt,
+        public readonly ?int $length = null,
+        public readonly ?string $link = null,
     ) {}
 
     public static function code(int $length, CarbonImmutable $expiresAt): self

@@ -188,7 +188,7 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - The code goes to its own channel, `phone_verification` (`storage/logs/phone-verification.log`). That channel is not redacted, and nothing else writes there. The number in the line is masked (`010*****678`).
     - No other channel ever receives the code; a test reads every log file to check.
     - Outside `local` and `testing`, this driver and the fake sign-in (`AWEZ_SIGN_IN_FAKE`) are refused (`IdentityServiceProvider`). The app serving requests refuses to boot with either, and anything else that resolves a driver, such as a queue worker or a command, throws when it does. Console commands that touch neither still run: Composer's `package:discover` boots the app during `composer install`, before CI or an image build has a `.env`, so the environment is `production` then. Production therefore needs `AWEZ_PHONE_VERIFICATION_DRIVER=whatsapp_inbound`, which step 4.3b builds.
-72. **Deleting an account anonymizes it, and the row always stays** (DECISIONS 41 and 56). This settles entry 41's two options. `DeleteAccount` does it all in one transaction, or none of it.
+72. **Deleting an account anonymizes it, and the row always stays** (DECISIONS 41 and 56; the choices beyond the brief below approved by the owner). This settles entry 41's two options. `DeleteAccount` does it all in one transaction, or none of it.
     - **Identity:** tokens, device tokens, social accounts and phone verifications are deleted.
     - **Personal data:** `name` becomes "حساب محذوف", in the default locale, because the name is stored data. `email`, `phone`, `avatar_url`, `password`, `district_id` and their dates are blanked. `status` becomes `deleted`, and `deleted_at` is set.
     - **Each domain cleans up its own rows** through its own Action:
@@ -202,15 +202,16 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - **"Points at"** means any agreement, lead, commission entry, conversation, booking, favorite, featured placement or report. Polymorphic columns have no foreign key, so the Action asks each relationship (`isPointedAt()` on `Property` and `UsedItem`).
     - **Signing in again** with the same Google or Apple account creates a new user, because the account's social links were deleted.
     - **Not handled yet:** the account's database notifications. The Notifications domain gets its Actions in step 3.4.
-73. **Finding the account at sign-in.**
+73. **Finding the account at sign-in** (approved by the owner).
     - First by `(provider, subject)`.
     - Else by email, lowercased, and only when the provider says it is verified. An unverified email is never linked and never stored.
     - A suspended account found by its email refuses the sign-in (`account_suspended`), so a second provider cannot get around a suspension.
     - If the account with that email already has another account of this provider, a new user is created without the email, because emails are unique.
     - A new user's name is the one the app sends (Apple), else the token's, else "مستخدم أوز إيه".
 74. **Tokens.**
-    - There is one Sanctum token per device name: signing in again under the same name deletes the old token, and its push token with it. The token never expires (`sanctum.expiration` stays null) and is revoked by sign-out and by account deletion.
-    - The brief's `platform` at sign-in is not taken, because nothing would store it. `PUT me/device-token` carries the platform with the push token.
+    - There is one Sanctum token per device name: signing in again under the same name deletes the old token, and its push token with it.
+    - Tokens never expire (owner's decision): `sanctum.expiration` stays null, Sanctum's default. A token ends on sign-out and on account deletion.
+    - The platform is stored on the push token only (owner's decision): `PUT me/device-token` carries it, and sign-in takes none.
 75. **ID tokens** (`IdTokenDecoder`, used by the Google and Apple drivers).
     - Only RS256 is accepted. `exp` and `iat` are required, with a 60-second leeway. php-jwt checks `nbf` too.
     - `aud` must be one of the configured client ids. While none are configured, every token is refused.
@@ -231,7 +232,10 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - A push token names one app install, so if another access token held it (the phone signed in again, or changed hands), that row goes. Pushes then reach only the device's current account.
 79. **Domain errors can carry `errors` and headers.** `DomainException::errors()` is how `verification_code_invalid` sends `attempts_left`, and `headers()` is how `too_many_attempts` sends `Retry-After`.
 80. **A guest's request to a signed-in route is not counted by the `api` limiter:** Laravel's middleware priority runs `auth:sanctum` first, which answers 401 without doing any work. Public routes (sign-in) are counted per IP.
-81. **Data objects are plain `final readonly` classes** (`VerifiedIdentity`, `PhoneChallenge`, `ProfileChanges`, ...), and the Form Requests build them by hand. `spatie/laravel-data`, which CLAUDE.md names, is not installed. The owner approved two packages for this step, and it was not one of them.
+81. **Data objects are `spatie/laravel-data` classes** (owner's decision): `VerifiedIdentity`, `PhoneChallenge`, `ProfileChanges`, `SignedIn` and `IssuedPhoneCode` extend `Data`, and an arch rule keeps every domain's `Data` layer that way.
+    - They are `final` with `readonly` properties, not `final readonly` classes: `Data` keeps a mutable context, and PHP allows a readonly class to extend only a readonly one.
+    - `ProfileChanges` uses `Optional` for the fields `PATCH me` leaves out, and `UpdateProfileRequest::toData()` builds it with `from()`, mapping snake_case input to its properties.
+    - `IdTokenClaims` moved to `Drivers` and stays a plain class: it is the decoder's view of a token, and nothing crosses a boundary with it.
 82. **Seeing a user is not changing them:** `last_seen_at` is written through the query builder, so `updated_at` stays.
 83. **`UserFactory` reads each user back after creating it,** so it has every column, as one loaded by a request does. Strict models throw on a column the factory did not set.
 84. **The Identity tables' policies deny everything:** the rows are reached only through the token's own account (`me`), never by id.

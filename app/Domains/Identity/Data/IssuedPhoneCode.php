@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Domains\Identity\Data;
 
 use App\Domains\Identity\Models\PhoneVerification;
+use Spatie\LaravelData\Data;
 
-final readonly class IssuedPhoneCode
+/**
+ * An opened confirmation and its code, which only the driver sees: the table holds its HMAC.
+ */
+final class IssuedPhoneCode extends Data
 {
     public function __construct(
-        public PhoneVerification $verification,
-        #[\SensitiveParameter] public string $code,
-        public int $length,
+        public readonly PhoneVerification $verification,
+        #[\SensitiveParameter] public readonly string $code,
+        public readonly int $length,
     ) {}
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domains\Identity\Drivers;
 
-use App\Domains\Identity\Data\IdTokenClaims;
 use App\Domains\Identity\Exceptions\InvalidIdentityToken;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;

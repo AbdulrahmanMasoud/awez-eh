@@ -49,7 +49,7 @@
     - `AWEZ_GOOGLE_CLIENT_IDS`: the Android, iOS and web client ids, comma-separated;
     - `AWEZ_APPLE_CLIENT_IDS`: the app's bundle id.
 
-   Until they are set, every real ID token is refused (OPEN_QUESTIONS 7).
+   Until they are set, every real ID token is refused (OPEN_QUESTIONS 6).
 2. **To try sign-in locally** before then, set `AWEZ_SIGN_IN_FAKE=true` in your `.env` and sign in with `fake:<any email>` as the ID token. Confirmation codes are in `storage/logs/phone-verification.log`.
 3. **After merging,** in the main checkout:
     - `git pull`;
@@ -226,3 +226,23 @@ The code (`160637`), the number in full (`01012345678`, `+201012345678`) and the
 - **New log channel:** `phone_verification`, at `storage/logs/phone-verification.log`.
 - **Outbound HTTPS** to `www.googleapis.com` and `appleid.apple.com` for their keys, cached for their `max-age`.
 - **Removed:** `GET /api/v1/ping`.
+
+## Update (2026-11-25)
+
+The owner's answers:
+
+1. **The dev database** is rebuilt with `sail artisan migrate:fresh --seed`, approved this once, after the merge.
+2. **`spatie/laravel-data` 4.23.1 is installed** (with `spatie/laravel-package-tools` 1.93.3 and `spatie/php-structure-discoverer` 2.4.4).
+    - `VerifiedIdentity`, `PhoneChallenge`, `ProfileChanges`, `SignedIn` and `IssuedPhoneCode` now extend `Data`.
+    - They are `final` with `readonly` properties. `final readonly` classes are not possible: `Data` keeps a mutable context, and a readonly class can extend only a readonly one.
+    - `ProfileChanges` uses `Optional` for the fields `PATCH me` leaves out, and `UpdateProfileRequest::toData()` builds it with `ProfileChanges::from()`.
+    - `IdTokenClaims` moved to `Drivers` as a plain class, because it is the decoder's view of a token and crosses no boundary.
+    - A new arch rule: every domain's `Data` classes are final and extend `Data`. A throwaway plain class in `Identity\Data` fails it.
+    - OPEN_QUESTIONS 6 is closed, and the client ids question is now 6 (DECISIONS 81).
+3. **The platform is stored on the push token only** (DECISIONS 74).
+4. **Tokens never expire**, Sanctum's default, now recorded (DECISIONS 74).
+5. **The choices beyond the brief are approved** (DECISIONS 72 and 73).
+
+**Verification:** `sail composer check` passes: Pint, Rector, Larastan, and Pest with 957 tests and 2,389 assertions (the new arch rule adds one). The account and profile tests pass unchanged against the converted Data objects.
+
+**Deploy notes, added:** `spatie/laravel-data` 4.23.1 and its two dependencies.

@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Identity\Data;
+namespace App\Domains\Identity\Drivers;
 
 use stdClass;
 
 /**
- * The claims of an ID token whose signature, issuer, audience and times were checked.
+ * The claims of an ID token whose signature, issuer, audience and times were checked: the
+ * decoder's view of a token for the drivers, not a Data object (nothing crosses a boundary with it).
  */
 final readonly class IdTokenClaims
 {
