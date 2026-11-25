@@ -13,7 +13,7 @@ The owner and Claude (on claude.ai) plan the work here. Claude Code carries it o
 | 002 | [Core support (BUILD_PLAN 1.2)](002-core-support.md)                          | done   | #3  |
 | 003 | [Data model: geography and content (BUILD_PLAN 1.3a)](003-content-data-model.md) | done   | #5  |
 | 004 | [Data model: interaction and business (BUILD_PLAN 1.3b)](004-interaction-data-model.md) | done   | #6  |
-| 005 | [Sign-in (BUILD_PLAN 1.4)](005-sign-in.md)                                     | review | #8  |
+| 005 | [Sign-in (BUILD_PLAN 1.4)](005-sign-in.md)                                     | done   | #8  |
 
 The statuses are `planned` (no brief yet, do not start), `ready`, `in progress`, `review` (the PR is open and the report is written), `done` (merged) and `dropped`.
 
