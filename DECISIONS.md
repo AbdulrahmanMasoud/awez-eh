@@ -240,3 +240,48 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
 83. **`UserFactory` reads each user back after creating it,** so it has every column, as one loaded by a request does. Strict models throw on a column the factory did not set.
 84. **The Identity tables' policies deny everything:** the rows are reached only through the token's own account (`me`), never by id.
 85. **No config file may need a development package.** Laravel loads every file in `config/` at boot, and a production install (`--no-dev`) has no Scribe. `config/scribe.php` returns `[]` when Scribe's classes are missing. `BootWithoutDevPackagesTest` boots the app in a child process with Scribe's classes and service provider hidden, as `--no-dev` leaves it.
+
+## Step 1.5 (task 006)
+
+86. **Admin permissions count only inside the panel, and sit in the same policies as the resident rules** (ADR 0006).
+    - A policy asks `$user->mayAdminister('Update:City')` beside its resident rules. That is true only when the request is inside the admin panel (`App\Support\AdminArea`, which the panel provider points at Filament's current panel), the account is active, and one of its roles holds the permission.
+    - Through the API, an admin is a resident like any other. An admin who also signs in to the app with Google gets nothing from their roles there: no update and no view that a resident would not get. API lists are scoped queries, not `viewAny` checks, and every ability needs the panel.
+    - Residents hold no role and no permission.
+    - Spatie's permission gate (an ability named like a permission) stays on, but no policy ability is named like one (`update` against `Update:City`).
+    - `super_admin` holds every permission explicitly (`SyncAdminRoles`). Shield's gate shortcut (`define_via_gate`) is off, because it would grant every ability everywhere, the API included.
+    - Shield's generated policies are off: policies stay one per model, written by hand. Shield names the permissions (`Affix:Subject`, PascalCase), and its roles screen lists them; a test keeps `AdminPermissions::all()` equal to Shield's catalogue.
+    - The panel runs with `strictAuthorization()`: a missing policy method is an error, not "allowed".
+87. **Roles and permissions** (spatie/laravel-permission): `super_admin`, `moderator`, `data_entry` and `sales` (ARCHITECTURE §4), seeded everywhere by `ReferenceDataSeeder` through `SyncAdminRoles`.
+    - Seeding is idempotent and only adds, so permissions a super_admin gives a role on the roles screen stay.
+    - This step's defaults: `super_admin` everything; `moderator` users (view, suspend, reactivate, show a number); `data_entry` cities, districts, trades and place categories (view, create, edit, reorder); `sales` users (view).
+    - The four roles cannot be deleted on the roles screen; a role added there can.
+    - The tables come from the package's stub, with `model_id` a UUID, an index on `role_has_permissions.role_id`, and no teams. Roles and permissions keep the package's integer ids, like framework tables (DECISIONS 9).
+88. **Who enters the panel:** a user with an admin role, a password and an active account (`User::canAccessPanel()`); anyone else gets 403.
+    - Two-factor authentication with an authenticator app (Filament's, with recovery codes) is required: an admin without it is sent to set it up before any page. Its secret and recovery codes are stored encrypted, in two new `users` columns.
+    - Filament limits sign-in attempts to 5 a minute per IP address, and the two-factor challenge separately per user.
+    - An admin suspended or deleted while signed in is signed out on the next request (`AuthenticateAdmin`, which extends Filament's `Authenticate` so Laravel's middleware priority keeps it first).
+    - Suspending an account also deletes its web sessions, as well as its API tokens.
+    - Deleting an account through the API removes its roles and authenticator, and refuses the last active super_admin (`last_super_admin`, 409), who also cannot be suspended or lose the role.
+89. **`awez:create-admin`** creates an admin, or promotes the account with that email, keeping its name. It is the only way to make the first super_admin, in every environment.
+    - The password is asked twice, hidden, and never taken as an option, so it stays out of shell history. `Password::defaults()` is at least 12 characters.
+    - It prints the email and the role, nothing secret, and refuses a suspended or deleted account.
+    - The only admin with a known password is `DemoAdminSeeder`'s `admin@awez.test`, in local and testing only.
+90. **The activity log** (spatie/laravel-activitylog, log name `admin`) records admin actions only.
+    - Reference data (cities, districts, trades, place categories) logs its fillable fields, before and after, when changed inside the panel (`LogsAdminChanges`); seeders, the API and jobs are not admin actions and are left out. Locations are left out too.
+    - Users are never logged by model events. Their Actions write one entry each, with the admin, the reason, and before and after for statuses and roles: `SuspendUser`, `ReactivateUser`, `UpdateUserRoles`, `RecordPhoneReveal` (who looked at a number, never the number) and `CreateAdmin`. A test proves no name, email or number reaches the log.
+    - The table uses UUID morphs and `jsonb`, indexed by subject, causer, event and time.
+    - The read-only page (`سجل النشاط`) is for `View:ActivityLog`, which is `super_admin`'s by default.
+91. **The panel's look and language** (docs/design/ADMIN_PANEL.md).
+    - The theme is Filament's own (`make:filament-theme`), built by Vite inside Sail and in CI. The brand colours are the panel's colour map, and the theme file adds the background, the radii and the dark stat card.
+    - Readex Pro comes from Filament's default font provider (Bunny Fonts, a privacy-respecting mirror of Google Fonts).
+    - The language is the admin's `users.locale` (`SetAdminLocale`), Arabic before signing in, switched from the user menu; Filament's Arabic translations make the layout right to left.
+    - The navigation groups are an enum in the design's order. Reference data, users, roles and the activity log sit under النظام, the only group with entries yet.
+    - Lucide icons are drawn from `mallardduck/blade-lucide-icons` (owner's approval). Reference data picks from `App\Support\LucideIcons`, and every name there is a real Lucide icon (checked against the package's 2,416).
+92. **Filament's notification bell reads `notifications.data` as JSON**, and Laravel's table stored it as text; a migration makes it `jsonb`.
+93. **The users list** shows numbers masked; the full number appears only on demand, for roles allowed it, and the log records each time.
+    - Search: a number typed any way finds its account through the unique index; otherwise the search is by email (exact) or part of the name. The name search scans the table, which is fine at this size; a trigram index can come when it is not. Search terms are not split, so `0101 234 5678` is one number.
+    - "Joined" sorts by `id` (UUID v7, DECISIONS 53). Status has a new index for its filter; the other filters ask indexed foreign keys.
+94. **The dashboard** has the three widgets whose data exists: the review queue, listings published by kind, and new users with the share that confirmed a phone.
+    - The period is today (from midnight in Cairo), the last 7 days or the last 30.
+    - The review queue is the whole queue, whatever the period: a queue filtered by date would hide its oldest items, which are the ones that matter.
+95. **Only two panel middleware are persistent** (re-run on Livewire's own requests): `SetAdminLocale` and `AuthenticateAdmin`; Filament makes its own persistent. Making the whole list persistent ran `StartSession` and `EncryptCookies` a second time inside every Livewire request. That replaced the session and signed the admin out on the next request: the real run found it when the notification bell lazy-loaded. A test pins the persistent list.

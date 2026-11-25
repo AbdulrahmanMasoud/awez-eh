@@ -34,7 +34,7 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 | Domain | Tables |
 | --- | --- |
-| Identity | `users`, `social_accounts`, `phone_verifications`, `device_tokens`, `personal_access_tokens` |
+| Identity | `users`, `social_accounts`, `phone_verifications`, `device_tokens`, `personal_access_tokens`, `roles`, `permissions` (and their pivots), `activity_log` |
 | Geography | `cities`, `districts` |
 | RealEstate | `properties`, `property_agreements` |
 | Services | `trades`, `providers`, `provider_trades`, `provider_prices` |
@@ -60,7 +60,8 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 - **The phone number** is confirmed separately, through `PhoneVerifier`: a `log` driver during development (the code goes to its own log channel) and, from step 4.3b, a code the resident sends us on WhatsApp. `phone_verifications` holds the hashed codes and is what the rate limits count. `users.phone` holds only a confirmed number.
 - **Statuses:** an account is `active`, `suspended` (refused on every signed-in route) or `deleted`.
 - **Deleting an account anonymizes it** (DECISIONS 72): the row stays, because conversations, bookings, reviews and leads point at it. Its sign-in links, tokens and personal data go, and each domain archives or deletes its own content through its own Action (brokered properties are archived and kept).
-- **Roles:** every user is a resident; a user is also an advertiser (owns listings or places) and a provider (has a craftsman profile) by what they own, not by a column. Admins sign in to Filament with email, password and two-factor authentication, and hold admin roles (`super_admin`, `moderator`, `data_entry`, `sales`; step 1.5).
+- **Roles:** every user is a resident; a user is also an advertiser (owns listings or places) and a provider (has a craftsman profile) by what they own, not by a column. Admins sign in to the Filament panel at `/admin` with email, password and a required authenticator app, and hold admin roles (`super_admin`, `moderator`, `data_entry`, `sales`) through `spatie/laravel-permission`, named the way Filament Shield names permissions. An admin permission counts only inside the panel: through the API an admin is a resident (DECISIONS 86). Admins are made with `awez:create-admin`.
+- **Activity log:** every admin action is recorded (`activity_log`, log `admin`): who, what, which record, why, before and after, never personal data.
 - Ownership is enforced by Policies (ADR 0002). The account endpoints take no user id: they answer for the token's own account.
 
 ## 5. Content lifecycle
