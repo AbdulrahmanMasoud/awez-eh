@@ -121,12 +121,12 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - `App\Support\Database\AppendOnly::enable()` attaches triggers that refuse `UPDATE`, `DELETE` and `TRUNCATE` (which skips row triggers); `disable()` detaches them.
     - The SQL is literal, and the table is a bound `regclass`, so PostgreSQL quotes the names. Its three functions (`append_only_refuse`, `_attach`, `_detach`) are created or replaced on every call: `migrate:fresh` drops tables and their triggers but leaves functions, and a rollback leaves them too, which is harmless.
     - The models use `IsAppendOnly`: `save()` on an existing row and `delete()` throw `App\Exceptions\AppendOnlyViolation` before the database is asked, and rows record `created_at` only.
-56. **Review: some rows keep their parents for good,** because their tables are histories or append-only. These can never be hard-deleted:
+56. **Some rows keep their parents for good,** because their tables are histories or append-only (owner's decision). These can never be hard-deleted:
     - a user who is the resident or counterpart of a booking, the actor of a booking event, the resident of a lead, the recorder of a commission entry, or the sender of a message in someone else's conversation;
     - a property with leads or commission entries, and an agreement with commission entries;
     - a booking, and a lead that a correction or a commission entry points at.
 
-    So step 1.4's account deletion cannot delete the `users` row of an account with any history. It blanks the personal data instead, as entry 41 already does for brokered listings. The owner confirms that this applies to every such account.
+    An account with history is never hard-deleted: step 1.4's account deletion blanks its personal data instead, as entry 41 does for brokered listings (owner's decision).
 57. **A message keeps its sender's account** with `noActionOnDelete`, which PostgreSQL checks at the end of the statement. A conversation deleted with its resident takes its messages with it, but a member of staff whose messages stay in residents' conversations cannot be deleted; staff accounts are deactivated instead.
 58. **Conversations.**
     - No counterpart means the platform answers, as on every brokered property: the owner's id is in neither the conversation nor its messages, which a test checks, and the owner cannot read them.
@@ -137,7 +137,7 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - A correction is a new row that carries the voided lead's details and source, with `voids_lead_id` and a required `void_reason`. A lead is voided at most once.
     - A chat lead comes from a conversation, and a viewing lead from a booking (a `CHECK`).
     - No resident reads a lead through the API, not even the one it is about (`LeadPolicy` refuses everyone); admins see leads in Filament.
-60. **Review: the booking state machine** (`BookingStateMachine`). The brief names the statuses and the actors; these transitions are my proposal, for the owner and for step 3.1:
+60. **The booking state machine** (`BookingStateMachine`; approved by the owner as proposed). The brief names the statuses and the actors; the transitions:
 
     | From | To | Kinds | Who |
     | --- | --- | --- | --- |
@@ -155,6 +155,7 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - "Platform" is the staff, who run brokered viewings; `no_show` means the resident did not show up.
     - A visit completes only from `in_progress`. Declined, completed, both cancellations and `no_show` are terminal.
     - The database also refuses `on_the_way` and `in_progress` for a viewing, and a viewing of anything but a property or a visit by anyone but a provider.
+    - Rescheduling is not a status: it is an edit of `scheduled_at` with its own booking event, built in step 3.1 (owner's decision).
     - The table is built from `BookingTransition` objects in a method, not a constant: mutation testing runs only the tests that cover a line, and line coverage never reaches the inside of a constant.
 61. **Reviews:** one per booking (a unique `booking_id`); a rating from 1 to 5; a reply comes with its date; `is_hidden` comes with `hidden_at`. That the booking is `completed` is the Action's check in step 3.2. Everyone sees a review unless an admin hid it, and its reviewer always does.
 62. **`CommissionBalance`.**
@@ -168,7 +169,7 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - `phone_display` is text: emergency lines have three digits (`122`) and hotlines five, which `PhoneNumber` rightly refuses.
     - A duty pharmacy's `duty_date` is a Cairo calendar date, like opening hours (entry 40), while `starts_at` and `ends_at` are UTC.
     - A news item's author is kept with `nullOnDelete`, so an admin account can go, and a published item has a date.
-67. **Review: the emergency numbers** seeded for Sadat City are Egypt's national lines: الشرطة 122، الإسعاف 123، المطافئ 180، طوارئ الكهرباء 121، طوارئ الغاز 129، طوارئ المياه 125. The owner confirms them, and sends the city's hospitals and transport lines.
+67. **The emergency numbers** seeded for Sadat City are Egypt's national lines (kept by the owner): الشرطة 122، الإسعاف 123، المطافئ 180، طوارئ الكهرباء 121، طوارئ الغاز 129، طوارئ المياه 125. The city's hospitals and transport lines are still to come (OPEN_QUESTIONS 5).
 68. **The morph map adds `conversation`, `message`, `booking` and `review`.** Messages and reviews can be reported.
 69. **Demo interactions** (`DemoInteractionSeeder`, after `DemoContentSeeder`, in `local` and `testing` only).
     - A member of staff (`staff@awez-eh.test`) answers for the platform; admin roles come in step 1.5.

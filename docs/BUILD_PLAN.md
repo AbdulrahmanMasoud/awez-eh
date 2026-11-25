@@ -81,7 +81,7 @@ Tick a box only after its verification has been run and passed. A step without a
 
 ## Phase 3 — Interaction and trust
 
-- [ ] **3.1 Bookings** with their state machine and events timeline; viewings of brokered properties create leads.
+- [ ] **3.1 Bookings** with their state machine and events timeline; viewings of brokered properties create leads. Rescheduling is not a status: it edits `scheduled_at` and records its own booking event (DECISIONS 60).
 - [ ] **3.2 Reviews** after a finished booking only; badges (verified, quick reply, jobs done).
 - [ ] **3.3 Urgent craftsman** ("in 30 minutes"): dispatch to the nearest three available, offers with arrival time, acceptance.
 - [ ] **3.4 Notifications** through FCM and the database; search alerts.

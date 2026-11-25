@@ -19,25 +19,12 @@
 
 ## Decisions for the owner
 
-1. **The booking rules** (DECISIONS 60, OPEN_QUESTIONS 6). The brief named the statuses and who can act; which moves are allowed is my proposal:
+All answered (see the update at the end):
 
-    | From | To | Kind | Who |
-    | --- | --- | --- | --- |
-    | requested | confirmed | both | owner or craftsman, staff |
-    | requested | declined | both | owner or craftsman, staff, the system (unanswered in time) |
-    | requested, confirmed | cancelled by the resident | both | resident |
-    | confirmed | completed | viewing | owner, staff |
-    | confirmed | on the way, in progress | visit | craftsman |
-    | confirmed | cancelled by the counterpart, no-show | both | owner or craftsman, staff |
-    | on the way | in progress, no-show | visit | craftsman |
-    | on the way | cancelled by the resident | visit | resident |
-    | on the way | cancelled by the counterpart | visit | craftsman, staff |
-    | in progress | completed | visit | craftsman |
-
-    "No-show" means the resident did not show up; a visit is completed only once it is in progress. Changing a rule now is one line and its test. After step 3.1, residents' bookings depend on the rules.
-2. **Accounts with history can never be deleted outright** (DECISIONS 56, OPEN_QUESTIONS 7). Once someone has booked, received a booking, has a lead, recorded a commission, or written in someone else's chat, those rows keep their account. You already decided that deleting an account blanks the personal data of residents with brokered listings (entry 41); this extends the same rule to every account with history. Doing it now would have meant giving up the histories, which the brief rules out. Please confirm.
-3. **Emergency numbers** (DECISIONS 67, OPEN_QUESTIONS 5): Egypt's national lines are seeded. Please confirm them, and send the city's hospitals and transport lines for the guide.
-4. **Housekeeping the permission check refused** (see The owner's steps). The brief asked me to remove task 003's worktree and branches; I was not allowed to, and nothing was removed.
+1. **The booking rules** are approved as proposed (DECISIONS 60). Rescheduling is not a status: it edits `scheduled_at` with its own booking event, in step 3.1.
+2. **An account with history is never hard-deleted;** its personal data is blanked in step 1.4 (DECISIONS 56).
+3. **Emergency numbers:** the national ones stay. The city's hospitals and transport lines are still open (OPEN_QUESTIONS 5).
+4. **Housekeeping:** I do it after the merge, with your approval where the permission check asks.
 
 ## The owner's steps
 
@@ -255,3 +242,14 @@ what      | on_brokered | with_counterpart
 - **Three PostgreSQL functions** (`append_only_refuse`, `append_only_attach`, `append_only_detach`) come with the append-only tables. Creating them needs the `CREATE` privilege on the schema, which our own server's database user has.
 - **Reference data:** `php artisan db:seed --force` adds the six emergency numbers, and can run on every deploy.
 - **No new packages.**
+
+## Update (2026-11-25)
+
+The owner answered the decisions; nothing in the code changed.
+
+- **Recorded:**
+    - DECISIONS 60: the booking rules are approved, and rescheduling is an edit of `scheduled_at` with its own event, also written into step 3.1 of `docs/BUILD_PLAN.md`;
+    - DECISIONS 56: an account with history is never hard-deleted;
+    - DECISIONS 67: the national emergency numbers stay.
+- **`OPEN_QUESTIONS.md`:** the booking rules and account deletion are settled and removed; hospitals and transport lines stay open.
+- **Housekeeping** of tasks 003 and 004 follows the merge.
