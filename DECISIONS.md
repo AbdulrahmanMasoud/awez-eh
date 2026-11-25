@@ -239,3 +239,4 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
 82. **Seeing a user is not changing them:** `last_seen_at` is written through the query builder, so `updated_at` stays.
 83. **`UserFactory` reads each user back after creating it,** so it has every column, as one loaded by a request does. Strict models throw on a column the factory did not set.
 84. **The Identity tables' policies deny everything:** the rows are reached only through the token's own account (`me`), never by id.
+85. **No config file may need a development package.** Laravel loads every file in `config/` at boot, and a production install (`--no-dev`) has no Scribe. `config/scribe.php` returns `[]` when Scribe's classes are missing. `BootWithoutDevPackagesTest` boots the app in a child process with Scribe's classes and service provider hidden, as `--no-dev` leaves it.

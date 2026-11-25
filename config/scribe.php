@@ -9,7 +9,13 @@ use Knuckles\Scribe\Extracting\Strategies\StaticData;
 
 use function Knuckles\Scribe\Config\removeStrategies;
 
-// API docs (Scribe, a development package): `sail artisan scribe:generate`, then /docs in local only.
+// Scribe is a development package: a production install (--no-dev) has none of its classes, and
+// every config file is still loaded at boot. Without Scribe there is nothing to configure.
+if (! class_exists(Defaults::class)) {
+    return [];
+}
+
+// API docs: `sail composer docs`, then /docs in local only.
 // The published copy comes with step 4.4. See https://scribe.knuckles.wtf/laravel/reference/config.
 
 return [
