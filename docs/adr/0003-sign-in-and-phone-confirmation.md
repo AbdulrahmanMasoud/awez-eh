@@ -13,6 +13,7 @@ Residents are used to mobile numbers, not passwords. The app needs a token per d
     - an SMS driver can be added later without changing the flow.
 - Codes are hashed, expire after a few minutes, allow few attempts, and are rate limited per number and per IP.
 - A signed-in user receives a Sanctum personal access token named after the device.
+- Before the Google and Apple clients exist, a fake sign-in (`AWEZ_SIGN_IN_FAKE=true`, an ID token `fake:<email>`) allows real runs. It and the `log` driver, which writes codes to its own `phone_verification` log channel (the one exception to "never log a code"), are refused at boot outside `local` and `testing` (step 1.4, DECISIONS 71).
 - Admins sign in to Filament with email, password and two-factor authentication.
 
 ## Consequences

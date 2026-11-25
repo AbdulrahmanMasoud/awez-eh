@@ -34,7 +34,7 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 | Domain | Tables |
 | --- | --- |
-| Identity | `users`, `otp_codes`, `device_tokens`, `personal_access_tokens` |
+| Identity | `users`, `social_accounts`, `phone_verifications`, `device_tokens`, `personal_access_tokens` |
 | Geography | `cities`, `districts` |
 | RealEstate | `properties`, `property_agreements` |
 | Services | `trades`, `providers`, `provider_trades`, `provider_prices` |
@@ -55,10 +55,13 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 ## 4. Identity and access
 
-- Sign-in is with Google or Apple; the phone number is confirmed by a code the resident sends us on WhatsApp, with a `log` driver during development (ADR 0003). No passwords and no paid SMS.
-- A verified code issues a Sanctum personal access token, named after the device. Tokens are revoked on sign-out and on account deletion.
-- Roles: every user is a resident; a user may also be an advertiser (owns listings or places) and a provider (craftsman). Admins sign in to Filament with email, password and two-factor authentication, and hold admin roles (`super_admin`, `moderator`, `data_entry`, `sales`).
-- Ownership is enforced by Policies (ADR 0002).
+- **Sign-in** is with Google or Apple (ADR 0003). The app gets an ID token natively; the API verifies it against the provider's published keys (`IdentityTokenVerifier`) and finds the user by `social_accounts (provider, subject)`, else by a verified email, else creates one. No passwords and no paid SMS.
+- **Tokens:** each device gets a Sanctum personal access token named after it; signing in again on the same device replaces it. A device's push token (`device_tokens`) belongs to its access token and goes with it. Tokens are revoked on sign-out and on account deletion.
+- **The phone number** is confirmed separately, through `PhoneVerifier`: a `log` driver during development (the code goes to its own log channel) and, from step 4.3b, a code the resident sends us on WhatsApp. `phone_verifications` holds the hashed codes and is what the rate limits count. `users.phone` holds only a confirmed number.
+- **Statuses:** an account is `active`, `suspended` (refused on every signed-in route) or `deleted`.
+- **Deleting an account anonymizes it** (DECISIONS 72): the row stays, because conversations, bookings, reviews and leads point at it. Its sign-in links, tokens and personal data go, and each domain archives or deletes its own content through its own Action (brokered properties are archived and kept).
+- **Roles:** every user is a resident; a user is also an advertiser (owns listings or places) and a provider (has a craftsman profile) by what they own, not by a column. Admins sign in to Filament with email, password and two-factor authentication, and hold admin roles (`super_admin`, `moderator`, `data_entry`, `sales`; step 1.5).
+- Ownership is enforced by Policies (ADR 0002). The account endpoints take no user id: they answer for the token's own account.
 
 ## 5. Content lifecycle
 
