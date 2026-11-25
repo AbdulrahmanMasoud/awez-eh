@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Domains\RealEstate\Models;
 
+use App\Domains\Bookings\Models\Booking;
 use App\Domains\Commissions\Models\CommissionEntry;
 use App\Domains\Commissions\Models\Lead;
+use App\Domains\Conversations\Models\Conversation;
+use App\Domains\Favorites\Models\Favorite;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
 use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Concerns\Moderated;
 use App\Domains\Moderation\Models\Concerns\Reportable;
+use App\Domains\Promotions\Models\FeaturedPlacement;
 use App\Domains\RealEstate\Enums\Finishing;
 use App\Domains\RealEstate\Enums\PropertyPurpose;
 use App\Domains\RealEstate\Enums\PropertyType;
@@ -30,6 +34,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * A listing for sale or rent. `brokered` ones are the platform's deals: their owner's number never
@@ -97,6 +102,57 @@ final class Property extends Model
     public function agreements(): HasMany
     {
         return $this->hasMany(PropertyAgreement::class);
+    }
+
+    /**
+     * Conversations residents opened about it.
+     *
+     * @return MorphMany<Conversation, $this>
+     */
+    public function conversations(): MorphMany
+    {
+        return $this->morphMany(Conversation::class, 'subject');
+    }
+
+    /**
+     * @return MorphMany<Favorite, $this>
+     */
+    public function favorites(): MorphMany
+    {
+        return $this->morphMany(Favorite::class, 'favoritable');
+    }
+
+    /**
+     * @return MorphMany<FeaturedPlacement, $this>
+     */
+    public function featuredPlacements(): MorphMany
+    {
+        return $this->morphMany(FeaturedPlacement::class, 'featurable');
+    }
+
+    /**
+     * Viewings booked of it.
+     *
+     * @return MorphMany<Booking, $this>
+     */
+    public function bookings(): MorphMany
+    {
+        return $this->morphMany(Booking::class, 'bookable');
+    }
+
+    /**
+     * Whether any other row points at it: then it is archived, never deleted (DeleteAccount).
+     */
+    public function isPointedAt(): bool
+    {
+        return $this->agreements()->exists()
+            || $this->leads()->exists()
+            || $this->commissionEntries()->exists()
+            || $this->conversations()->exists()
+            || $this->bookings()->exists()
+            || $this->favorites()->exists()
+            || $this->featuredPlacements()->exists()
+            || $this->reports()->exists();
     }
 
     /**

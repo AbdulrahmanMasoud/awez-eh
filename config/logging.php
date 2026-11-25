@@ -148,6 +148,16 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        // The `log` phone verification driver's codes, the one exception to "never log a code"
+        // (invariant 8, DECISIONS 71). Not redacted, local and testing only, and nothing else
+        // writes here.
+        'phone_verification' => [
+            'driver' => 'single',
+            'path' => env('LOG_PHONE_VERIFICATION_PATH', storage_path('logs/phone-verification.log')),
+            'level' => 'info',
+            'replace_placeholders' => true,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

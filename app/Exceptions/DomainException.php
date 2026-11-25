@@ -30,6 +30,26 @@ abstract class DomainException extends RuntimeException
     }
 
     /**
+     * Sent to the client under `errors`, as validation messages are: details it can act on.
+     *
+     * @return array<string, mixed>
+     */
+    public function errors(): array
+    {
+        return [];
+    }
+
+    /**
+     * Headers for the response, such as Retry-After.
+     *
+     * @return array<string, string>
+     */
+    public function headers(): array
+    {
+        return [];
+    }
+
+    /**
      * Laravel adds this to the log entry if the exception is ever logged.
      *
      * @return array<string, mixed>

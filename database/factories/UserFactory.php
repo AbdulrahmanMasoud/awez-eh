@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Identity\Models\User;
+use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Date;
 
 /**
+ * A resident who signed in with Google or Apple: no password (only admins have one, step 1.5)
+ * and no confirmed number yet.
+ *
  * @extends Factory<User>
  */
 final class UserFactory extends Factory
 {
     #[\Override]
     protected $model = User::class;
-
-    /**
-     * The current password being used by the factory.
-     */
-    private static string $password;
 
     /**
      * Define the model's default state.
@@ -32,10 +31,17 @@ final class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => self::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'email_verified_at' => Date::now(),
         ];
+    }
+
+    /**
+     * Read back after creating, so a user has every column, as one loaded by a request does:
+     * strict models throw on a column the factory did not set (status, locale, last_seen_at).
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(fn (User $user): User => $user->refresh());
     }
 
     /**
@@ -45,6 +51,25 @@ final class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * With a confirmed mobile number, a different one for each user.
+     */
+    public function withPhone(?string $phone = null): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'phone' => PhoneNumber::from($phone ?? '010'.fake()->unique()->numerify('########')),
+            'phone_verified_at' => Date::now(),
+        ]);
+    }
+
+    public function suspended(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'status' => UserStatus::Suspended,
+            'suspended_at' => Date::now(),
         ]);
     }
 }

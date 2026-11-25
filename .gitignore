@@ -17,6 +17,13 @@
 /storage/*.key
 /storage/pail
 
+# API docs that `artisan scribe:generate` writes (served at /docs in local; published in step 4.4)
+/.scribe
+/resources/views/scribe
+/public/vendor/scribe
+/storage/app/scribe
+/storage/app/private/scribe
+
 # Tests and tools
 /.phpunit.cache
 .phpunit.result.cache

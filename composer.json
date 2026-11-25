@@ -7,13 +7,16 @@
     "require": {
         "php": "^8.5",
         "brick/money": "^0.15.2",
+        "firebase/php-jwt": "^7.2",
         "laravel/framework": "^13.43",
         "laravel/sanctum": "^4.5",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "spatie/laravel-data": "^4.23"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.7",
         "fakerphp/faker": "^1.23",
+        "knuckleswtf/scribe": "^5.11",
         "larastan/larastan": "^3.15",
         "laravel-lang/lang": "^15.39",
         "laravel/boost": "^2.10",
@@ -85,6 +88,10 @@
         "fmt": [
             "@rector",
             "@lint"
+        ],
+        "docs": [
+            "@putenv APP_LOCALE=en",
+            "@php artisan scribe:generate --force --no-interaction"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

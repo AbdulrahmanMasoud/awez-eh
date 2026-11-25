@@ -96,7 +96,8 @@ it('writes the validation message of each field in the language the client asks 
         ->assertJsonPath('errors.name.0', $required)
         ->assertJsonPath('errors.age.0', $integer);
 })->with([
-    'Arabic' => ['ar', 'حقل name مطلوب.', 'يجب أن يكون حقل age عددًا صحيحًا.'],
+    // `name` has an Arabic attribute name (lang/ar/validation.php); `age` has none yet.
+    'Arabic' => ['ar', 'حقل الاسم مطلوب.', 'يجب أن يكون حقل age عددًا صحيحًا.'],
     'English' => ['en', 'The name field is required.', 'The age field must be an integer.'],
 ]);
 

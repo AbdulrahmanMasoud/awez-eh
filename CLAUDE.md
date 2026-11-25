@@ -21,6 +21,7 @@ sail composer check         # THE gate: pint --test, rector --dry-run, phpstan, 
 sail composer test          # pest unit + feature + arch, parallel
 sail composer test:mutate   # mutation testing of money, commissions and the booking state machine (score 100), run when they change
 sail composer fmt           # pint + rector (writes)
+sail composer docs          # API docs (Scribe) at http://localhost:8020/docs, in local only
 sail artisan migrate:fresh --seed
 ```
 

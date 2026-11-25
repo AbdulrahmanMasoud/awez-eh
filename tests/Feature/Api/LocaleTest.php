@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Domains\Identity\Models\User;
+use Laravel\Sanctum\Sanctum;
+
 it('answers in the language the client prefers, Arabic otherwise', function (?string $acceptLanguage, string $locale): void {
     $headers = $acceptLanguage === null ? [] : ['Accept-Language' => $acceptLanguage];
 
-    $this->getJson('/api/v1/ping', $headers)
+    Sanctum::actingAs(User::factory()->create());
+
+    $this->getJson('/api/v1/me', $headers)
         ->assertOk()
-        ->assertHeader('Content-Language', $locale)
-        ->assertJsonPath('data.locale', $locale);
+        ->assertHeader('Content-Language', $locale);
 })->with([
     'no header' => [null, 'ar'],
     'Arabic' => ['ar', 'ar'],
@@ -32,4 +36,13 @@ it('sets the language on API errors too', function (): void {
 it('makes Arabic the default locale', function (): void {
     expect(config('app.locale'))->toBe('ar')
         ->and(config('app.fallback_locale'))->toBe('en');
+});
+
+it('answers a signed-in request in the language the client prefers, whatever the account\'s', function (): void {
+    Sanctum::actingAs(User::factory()->create(['locale' => 'ar']));
+
+    $this->patchJson('/api/v1/me', ['locale' => 'fr'], ['Accept-Language' => 'en'])
+        ->assertUnprocessable()
+        ->assertHeader('Content-Language', 'en')
+        ->assertJsonPath('message', __('errors.validation_failed', [], 'en'));
 });

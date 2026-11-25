@@ -23,6 +23,9 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <!-- Whatever a developer's .env says: tests turn the fake sign-in on where they need it. -->
+        <env name="AWEZ_SIGN_IN_FAKE" value="false" force="true"/>
+        <env name="AWEZ_PHONE_VERIFICATION_DRIVER" value="log" force="true"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>

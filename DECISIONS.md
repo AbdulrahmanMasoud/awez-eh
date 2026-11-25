@@ -181,3 +181,61 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
 70. **Two Rector rules don't fit Laravel code here:**
     - `RemoveUnusedPublicMethodParameterRector` is skipped for policies. The Gate reads a policy method's first parameter to decide whether a guest may be asked at all, so its parameters are a contract even when the answer ignores them.
     - A booking's events are `timeline()`, not `events()`: Rector reads `->events` as Eloquent's old `$events` property and renames it to `dispatchesEvents`.
+
+## Step 1.4 (task 005)
+
+71. **The `log` phone driver writes codes to a log: the one exception to "never log a code"** (invariant 8).
+    - The code goes to its own channel, `phone_verification` (`storage/logs/phone-verification.log`). That channel is not redacted, and nothing else writes there. The number in the line is masked (`010*****678`).
+    - No other channel ever receives the code; a test reads every log file to check.
+    - Outside `local` and `testing`, this driver and the fake sign-in (`AWEZ_SIGN_IN_FAKE`) are refused (`IdentityServiceProvider`). The app serving requests refuses to boot with either, and anything else that resolves a driver, such as a queue worker or a command, throws when it does. Console commands that touch neither still run: Composer's `package:discover` boots the app during `composer install`, before CI or an image build has a `.env`, so the environment is `production` then. Production therefore needs `AWEZ_PHONE_VERIFICATION_DRIVER=whatsapp_inbound`, which step 4.3b builds.
+72. **Deleting an account anonymizes it, and the row always stays** (DECISIONS 41 and 56; the choices beyond the brief below approved by the owner). This settles entry 41's two options. `DeleteAccount` does it all in one transaction, or none of it.
+    - **Identity:** tokens, device tokens, social accounts and phone verifications are deleted.
+    - **Personal data:** `name` becomes "حساب محذوف", in the default locale, because the name is stored data. `email`, `phone`, `avatar_url`, `password`, `district_id` and their dates are blanked. `status` becomes `deleted`, and `deleted_at` is set.
+    - **Each domain cleans up its own rows** through its own Action:
+        - `RemoveAccountProperties`: brokered properties are archived, with their agreements and leads.
+        - `RemoveAccountUsedItems`: the brief deletes used items. A used item that something points at is archived instead, so no conversation, favorite, placement or report is left pointing at nothing.
+        - `ArchiveAccountProvider`: the provider profile is archived.
+        - `ReleaseAccountPlaces`: places lose their owner and stay as they are.
+        - `RemoveAccountRequests`: requests without replies are deleted, and open requests with replies are closed.
+        - `DeleteAccountFavorites`, `DeleteAccountSearchAlerts` and `WithdrawAccountReports`: favorites, alerts and open reports are deleted. Resolved and dismissed reports stay, as the record of what admins decided.
+    - **Content the account left with others stays,** under the anonymous name: conversations, messages, bookings, reviews, leads, and replies it wrote to other residents' requests. Featured placements it bought stay too, since they are payment history.
+    - **"Points at"** means any agreement, lead, commission entry, conversation, booking, favorite, featured placement or report. Polymorphic columns have no foreign key, so the Action asks each relationship (`isPointedAt()` on `Property` and `UsedItem`).
+    - **Signing in again** with the same Google or Apple account creates a new user, because the account's social links were deleted.
+    - **Not handled yet:** the account's database notifications. The Notifications domain gets its Actions in step 3.4.
+73. **Finding the account at sign-in** (approved by the owner).
+    - First by `(provider, subject)`.
+    - Else by email, lowercased, and only when the provider says it is verified. An unverified email is never linked and never stored.
+    - A suspended account found by its email refuses the sign-in (`account_suspended`), so a second provider cannot get around a suspension.
+    - If the account with that email already has another account of this provider, a new user is created without the email, because emails are unique.
+    - A new user's name is the one the app sends (Apple), else the token's, else "مستخدم أوز إيه".
+74. **Tokens.**
+    - There is one Sanctum token per device name: signing in again under the same name deletes the old token, and its push token with it.
+    - Tokens never expire (owner's decision): `sanctum.expiration` stays null, Sanctum's default. A token ends on sign-out and on account deletion.
+    - The platform is stored on the push token only (owner's decision): `PUT me/device-token` carries it, and sign-in takes none.
+75. **ID tokens** (`IdTokenDecoder`, used by the Google and Apple drivers).
+    - Only RS256 is accepted. `exp` and `iat` are required, with a 60-second leeway. php-jwt checks `nbf` too.
+    - `aud` must be one of the configured client ids. While none are configured, every token is refused.
+    - The keys are cached under the URL's hash, for their `max-age`.
+    - The token's `kid` is read before the signature is checked. An unknown one refreshes the keys once. A key URL that cannot be reached refuses the token (401), because a 500 would only make the app retry.
+76. **Phone confirmation details.**
+    - The code's hash is an HMAC-SHA256 keyed by `APP_KEY`. A six-digit code hashed without a key is reversed in moments by anyone who reads the table. Rotating `APP_KEY` only invalidates the open codes.
+    - The rate limits count `phone_verifications` rows over sliding windows (`RateLimit`, a pure class), so a replaced start still counts. `Retry-After` is the largest wait among the limits reached.
+    - Starts are serialized per user with a row lock. A wrong attempt is counted and committed before the error is thrown, so a rollback cannot hand the attempt back.
+    - `PhoneVerifier::start()` also takes the IP address, which the driver stores, and drivers say their `driver()`; the brief's signature had neither.
+    - Known limit: deleting an account deletes its rows, and with them its counts. Getting around the limits that way needs a new Google or Apple sign-in each time.
+77. **The `users` table** edits task 001's migration (DECISIONS 21).
+    - `district_id` comes in the Identity migration, because districts are created after users.
+    - `email` and `phone` are unique where not null (partial indexes), and emails are stored lowercased.
+    - `CHECK`s pair each state with its date: a phone with `phone_verified_at`, `suspended` with `suspended_at`, `deleted` with `deleted_at`.
+78. **Push tokens.**
+    - There is one row per access token. `PUT me/device-token` answers 201 when it creates the row and 200 when it replaces it.
+    - A push token names one app install, so if another access token held it (the phone signed in again, or changed hands), that row goes. Pushes then reach only the device's current account.
+79. **Domain errors can carry `errors` and headers.** `DomainException::errors()` is how `verification_code_invalid` sends `attempts_left`, and `headers()` is how `too_many_attempts` sends `Retry-After`.
+80. **A guest's request to a signed-in route is not counted by the `api` limiter:** Laravel's middleware priority runs `auth:sanctum` first, which answers 401 without doing any work. Public routes (sign-in) are counted per IP.
+81. **Data objects are `spatie/laravel-data` classes** (owner's decision): `VerifiedIdentity`, `PhoneChallenge`, `ProfileChanges`, `SignedIn` and `IssuedPhoneCode` extend `Data`, and an arch rule keeps every domain's `Data` layer that way.
+    - They are `final` with `readonly` properties, not `final readonly` classes: `Data` keeps a mutable context, and PHP allows a readonly class to extend only a readonly one.
+    - `ProfileChanges` uses `Optional` for the fields `PATCH me` leaves out, and `UpdateProfileRequest::toData()` builds it with `from()`, mapping snake_case input to its properties.
+    - `IdTokenClaims` moved to `Drivers` and stays a plain class: it is the decoder's view of a token, and nothing crosses a boundary with it.
+82. **Seeing a user is not changing them:** `last_seen_at` is written through the query builder, so `updated_at` stays.
+83. **`UserFactory` reads each user back after creating it,** so it has every column, as one loaded by a request does. Strict models throw on a column the factory did not set.
+84. **The Identity tables' policies deny everything:** the rows are reached only through the token's own account (`me`), never by id.
