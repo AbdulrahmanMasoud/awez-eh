@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\RealEstate\Models;
 
+use App\Domains\Commissions\Models\CommissionEntry;
+use App\Domains\Commissions\Models\Lead;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
@@ -46,6 +48,22 @@ final class Property extends Model
     use HasUuids;
     use Moderated;
     use Reportable;
+
+    /**
+     * @return HasMany<Lead, $this>
+     */
+    public function leads(): HasMany
+    {
+        return $this->hasMany(Lead::class);
+    }
+
+    /**
+     * @return HasMany<CommissionEntry, $this>
+     */
+    public function commissionEntries(): HasMany
+    {
+        return $this->hasMany(CommissionEntry::class);
+    }
 
     /**
      * @return BelongsTo<User, $this>

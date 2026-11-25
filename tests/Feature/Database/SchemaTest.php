@@ -72,7 +72,7 @@ it('gives every search_text column a GIN trigram index', function (): void {
         order by 1
         SQL);
 
-    expect(array_column($columns, 'name'))->toBe(['places', 'properties', 'providers', 'requests', 'used_items'])
+    expect(array_column($columns, 'name'))->toBe(['guide_entries', 'news_items', 'places', 'properties', 'providers', 'requests', 'search_alerts', 'used_items'])
         ->and(array_column(array_filter($columns, fn (array $column): bool => ! $column['indexed']), 'name'))->toBe([]);
 });
 
@@ -151,8 +151,34 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         SQL);
 
     expect(array_column($rules, 'on_delete', 'foreign_key'))->toBe([
+        'booking_events.actor_id' => 'restrict',
+        'booking_events.booking_id' => 'restrict',
+        'bookings.counterpart_id' => 'restrict',
+        // Histories: a booking, its events, a lead and a commission entry keep their parents for good.
+        'bookings.resident_id' => 'restrict',
+        'commission_entries.lead_id' => 'restrict',
+        'commission_entries.property_agreement_id' => 'restrict',
+        'commission_entries.property_id' => 'restrict',
+        'commission_entries.recorded_by' => 'restrict',
+        'conversations.counterpart_id' => 'cascade',
+        'conversations.resident_id' => 'cascade',
         // Reference data is never deleted from under content: admins deactivate it instead.
         'districts.city_id' => 'cascade',
+        'duty_pharmacies.place_id' => 'cascade',
+        'favorites.user_id' => 'cascade',
+        'featured_placements.featured_package_id' => 'restrict',
+        'featured_placements.granted_by' => 'set null',
+        'featured_placements.user_id' => 'cascade',
+        'guide_entries.city_id' => 'restrict',
+        'leads.property_id' => 'restrict',
+        'leads.resident_id' => 'restrict',
+        'leads.voids_lead_id' => 'restrict',
+        'messages.conversation_id' => 'cascade',
+        // Checked at the end of the statement: a conversation deleted with its resident takes its messages,
+        // but a sender's messages in someone else's conversation keep the sender's account.
+        'messages.sender_id' => 'no action',
+        'news_items.city_id' => 'restrict',
+        'news_items.created_by' => 'set null',
         'opening_hours.place_id' => 'cascade',
         'place_categories.parent_id' => 'restrict',
         'place_items.place_id' => 'cascade',
@@ -186,6 +212,11 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'requests.place_category_id' => 'restrict',
         'requests.trade_id' => 'restrict',
         'requests.user_id' => 'cascade',
+        'reviews.booking_id' => 'restrict',
+        'reviews.hidden_by' => 'set null',
+        'reviews.reviewer_id' => 'cascade',
+        'search_alerts.district_id' => 'restrict',
+        'search_alerts.user_id' => 'cascade',
         'sessions.user_id' => 'cascade',
         'used_items.city_id' => 'restrict',
         'used_items.district_id' => 'restrict',
@@ -247,4 +278,19 @@ it('indexes what lists filter and sort by', function (string $table, array $expe
     'requests' => ['requests', ['user_id', 'area', 'trade_id', 'place_category_id', 'city_id', 'district_id', 'status, expires_at', 'location', 'search_text']],
     'request_replies' => ['request_replies', ['request_id', 'user_id']],
     'reports' => ['reports', ['user_id', 'reportable_type, reportable_id', 'status, created_at', 'resolved_by', "user_id, reportable_type, reportable_id unique where status::text = 'open'::text"]],
+    'conversations' => ['conversations', ['subject_type, subject_id', 'resident_id, last_message_at', 'counterpart_id, last_message_at', "resident_id, subject_type, subject_id unique where status::text = 'open'::text"]],
+    'messages' => ['messages', ['conversation_id, id', 'sender_id', 'location']],
+    'bookings' => ['bookings', ['bookable_type, bookable_id', 'resident_id', 'counterpart_id', 'status, scheduled_at', 'location']],
+    'booking_events' => ['booking_events', ['booking_id, created_at', 'actor_id']],
+    'reviews' => ['reviews', ['booking_id unique', 'reviewer_id', 'reviewable_type, reviewable_id', 'hidden_by']],
+    'favorites' => ['favorites', ['user_id, favoritable_type, favoritable_id unique', 'favoritable_type, favoritable_id']],
+    'search_alerts' => ['search_alerts', ['user_id', 'district_id', 'is_active, frequency', 'location', 'search_text']],
+    'notifications' => ['notifications', ['notifiable_type, notifiable_id']],
+    'leads' => ['leads', ['property_id, created_at', 'resident_id', 'voids_lead_id unique', 'source_type, source_id unique where voids_lead_id IS NULL']],
+    'commission_entries' => ['commission_entries', ['property_id, occurred_on', 'property_agreement_id', 'lead_id', 'recorded_by']],
+    'featured_packages' => ['featured_packages', ['applies_to, is_active, sort_order']],
+    'featured_placements' => ['featured_placements', ['featurable_type, featurable_id, ends_at', 'ends_at', 'featured_package_id', 'user_id', 'granted_by']],
+    'guide_entries' => ['guide_entries', ['city_id, category, sort_order', 'location', 'search_text']],
+    'duty_pharmacies' => ['duty_pharmacies', ['place_id, duty_date unique', 'duty_date']],
+    'news_items' => ['news_items', ['city_id, is_published, published_at', 'created_by', 'search_text']],
 ]);

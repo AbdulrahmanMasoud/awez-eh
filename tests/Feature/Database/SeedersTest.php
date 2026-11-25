@@ -2,6 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Domains\Alerts\Models\SearchAlert;
+use App\Domains\Bookings\Enums\BookingActor;
+use App\Domains\Bookings\Enums\BookingStatus;
+use App\Domains\Bookings\Models\Booking;
+use App\Domains\Bookings\Support\BookingStateMachine;
+use App\Domains\CityGuide\Enums\GuideCategory;
+use App\Domains\CityGuide\Models\DutyPharmacy;
+use App\Domains\CityGuide\Models\GuideEntry;
+use App\Domains\CityGuide\Models\NewsItem;
+use App\Domains\Commissions\Models\CommissionEntry;
+use App\Domains\Commissions\Models\Lead;
+use App\Domains\Conversations\Models\Conversation;
+use App\Domains\Conversations\Models\Message;
+use App\Domains\Favorites\Models\Favorite;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
@@ -10,13 +24,17 @@ use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Report;
 use App\Domains\Places\Models\Place;
 use App\Domains\Places\Models\PlaceCategory;
+use App\Domains\Promotions\Models\FeaturedPackage;
+use App\Domains\Promotions\Models\FeaturedPlacement;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\RealEstate\Models\PropertyAgreement;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
+use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
 use App\Domains\Services\Models\Trade;
 use App\Support\Geo\Point;
+use Carbon\CarbonImmutable;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoContentSeeder;
 use Database\Seeders\ReferenceDataSeeder;
@@ -105,9 +123,10 @@ it('seeds the demo content the brief asks for in local and testing', function ()
         ->and(ServiceRequest::query()->whereDoesntHave('replies')->count())->toBe(0)
         ->and(RequestReply::query()->count())->toBeGreaterThanOrEqual(20)
         ->and(Report::query()->count())->toBeGreaterThanOrEqual(3)
-        // 30 residents own the content; each of the 40 craftsmen has an account of their own.
-        ->and(User::query()->whereDoesntHave('provider')->count())->toBe(30)
-        ->and(User::query()->count())->toBe(70);
+        // 30 residents own the content; each of the 40 craftsmen has an account of their own; one
+        // member of staff answers for the platform.
+        ->and(User::query()->whereDoesntHave('provider')->count())->toBe(31)
+        ->and(User::query()->count())->toBe(71);
 
     foreach ([Property::class, Provider::class, Place::class, UsedItem::class] as $model) {
         expect($published($model))->toBeGreaterThan(0.6)->toBeLessThan(1.0);
@@ -133,4 +152,83 @@ it('refuses to seed demo content outside local and testing, even when called dir
 
     expect(fn () => $this->seed(DemoContentSeeder::class))
         ->toThrow(LogicException::class, 'local and testing only');
+});
+
+it('seeds Sadat City\'s emergency numbers, idempotently', function (): void {
+    $this->seed(ReferenceDataSeeder::class);
+    $this->seed(ReferenceDataSeeder::class);
+
+    $numbers = GuideEntry::query()->where('category', GuideCategory::Emergency)->orderBy('sort_order')->pluck('phone_display', 'title')->all();
+
+    expect($numbers)->toBe([
+        'الشرطة' => '122',
+        'الإسعاف' => '123',
+        'المطافئ' => '180',
+        'طوارئ الكهرباء' => '121',
+        'طوارئ الغاز' => '129',
+        'طوارئ المياه' => '125',
+    ])->and(GuideEntry::query()->where('is_published', false)->count())->toBe(0);
+});
+
+it('seeds demo interactions that keep the rules', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $machine = new BookingStateMachine;
+
+    // Bookings in every status, each reached by events the state machine allows.
+    expect(Booking::query()->distinct()->pluck('status')->map->value->sort()->values()->all())
+        ->toBe(collect(BookingStatus::cases())->map->value->sort()->values()->all());
+
+    foreach (Booking::query()->with('timeline')->get() as $booking) {
+        $status = null;
+
+        foreach ($booking->timeline as $event) {
+            expect($event->from_status)->toBe($status);
+
+            if ($status !== null) {
+                $actor = match ($event->actor_id) {
+                    null => BookingActor::System,
+                    $booking->resident_id => BookingActor::Resident,
+                    $booking->counterpart_id => BookingActor::Counterpart,
+                    default => BookingActor::Platform,
+                };
+                expect($machine->canTransition($booking->kind, $status, $event->to_status, $actor))->toBeTrue();
+            }
+
+            $status = $event->to_status;
+        }
+
+        expect($status)->toBe($booking->status);
+    }
+
+    $brokeredConversations = Conversation::query()->whereIn('subject_id', Property::query()->where('brokered', true)->select('id'))->get();
+    $brokeredViewings = Booking::query()->whereIn('bookable_id', Property::query()->where('brokered', true)->select('id'))->get();
+
+    expect($brokeredConversations)->not->toBeEmpty()
+        ->and($brokeredConversations->whereNotNull('counterpart_id'))->toBeEmpty()
+        ->and($brokeredViewings)->not->toBeEmpty()
+        ->and($brokeredViewings->whereNotNull('counterpart_id'))->toBeEmpty()
+        // A lead for every brokered conversation and viewing, and one corrected.
+        ->and(Lead::query()->whereNull('voids_lead_id')->pluck('source_id')->sort()->values()->all())
+        ->toBe($brokeredConversations->pluck('id')->merge($brokeredViewings->pluck('id'))->sort()->values()->all())
+        ->and(Lead::query()->whereNotNull('voids_lead_id')->count())->toBe(1)
+        ->and(Message::query()->count())->toBeGreaterThan(Conversation::query()->count())
+        // Reviews on completed bookings only.
+        ->and(Review::query()->whereHas('booking', fn ($query) => $query->where('status', '!=', BookingStatus::Completed))->count())->toBe(0)
+        ->and(Review::query()->count())->toBeGreaterThan(0)
+        ->and(Favorite::query()->count())->toBeGreaterThan(0)
+        ->and(SearchAlert::query()->count())->toBeGreaterThan(0)
+        ->and(CommissionEntry::query()->distinct()->pluck('property_agreement_id')->all())->toBe([PropertyAgreement::query()->sole()->id])
+        ->and(FeaturedPackage::query()->count())->toBe(2)
+        ->and(FeaturedPlacement::query()->active()->count())->toBeGreaterThanOrEqual(1)
+        ->and(FeaturedPlacement::query()->where('ends_at', '<=', now())->count())->toBeGreaterThanOrEqual(1)
+        ->and(FeaturedPlacement::query()->whereNotNull('cancelled_at')->count())->toBeGreaterThanOrEqual(1)
+        ->and(NewsItem::query()->count())->toBeGreaterThan(0);
+
+    // A pharmacy on duty each night of the next 14, Cairo dates.
+    $today = CarbonImmutable::now('Africa/Cairo')->startOfDay();
+    $dates = DutyPharmacy::query()->orderBy('duty_date')->get()->map(fn (DutyPharmacy $duty): string => $duty->duty_date->toDateString())->all();
+    $expected = array_map(fn (int $day): string => $today->addDays($day)->toDateString(), range(0, 13));
+
+    expect($dates)->toBe($expected)
+        ->and(DutyPharmacy::query()->whereHas('place.category', fn ($query) => $query->where('slug', '!=', 'pharmacies'))->count())->toBe(0);
 });

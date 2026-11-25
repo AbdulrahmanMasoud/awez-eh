@@ -54,7 +54,16 @@ Tick a box only after its verification has been run and passed. A step without a
         - Seeders: reference data everywhere (Sadat City, its districts, trades, place categories), idempotent; demo content in `local` and `testing` only.
         - Architecture tests: models live only in `App\Domains\*\Models`, are final, use `HasUuids` and declare their fillable attributes; every model with a `user_id` has a policy.
     - Verify: `sail composer check` green; on `testing`, `migrate:fresh --seed` (timed, under a minute), `migrate:rollback --step=<this step's migrations>` and `migrate` again; `\d properties`; an `EXPLAIN` of "published properties within 2 km, nearest first" using the GiST index and of a trigram search using the GIN index; row counts per table after seeding; ownership proven at the policy level for every user-owned table.
-- [ ] **1.3b Data model: interaction and business.** (task 004, planned) Conversations, messages, bookings, booking events, reviews, favorites, search alerts, notifications, leads, commission entries, featured packages and placements, city guide.
+- [x] **1.3b Data model: interaction and business.** (task 004)
+    - Acceptance:
+        - Domains `Conversations`, `Bookings`, `Reviews`, `Favorites`, `Alerts`, `Commissions`, `Promotions` and `CityGuide`, following step 1.3a's patterns: UUID v7 keys, an index on every foreign key and filter or sort column, enums as strings with a `CHECK`, `MoneyCast`, `PointCast`, `#[UseFactory]`, `#[UsePolicy]`, the enforced morph map with a short name for every new morphable model.
+        - Tables: `conversations`, `messages`, `bookings`, `booking_events`, `reviews`, `favorites`, `search_alerts`, Laravel's `notifications` (UUID morphs), `leads`, `commission_entries`, `featured_packages`, `featured_placements`, `guide_entries`, `duty_pharmacies`, `news_items`.
+        - Append-only tables (`leads`, `booking_events`, `commission_entries`): `App\Support\Database\AppendOnly::enable()` in their migrations adds a trigger that refuses `UPDATE` and `DELETE`, and their models refuse `save()` on an existing row and `delete()`. Their parents use `restrictOnDelete`.
+        - A brokered conversation or viewing has no counterpart (`counterpart_id` null): the platform answers, and the owner never appears.
+        - `BookingStateMachine` (pure): the statuses, the transitions allowed between them, and who may make each. `CommissionBalance` (pure): expected, invoiced, collected and outstanding from a property's entries. Both mutation tested.
+        - Policies: conversations and messages for their two participants only, bookings for the resident and the counterpart, reviews for everyone unless hidden, favorites, search alerts and featured placements for their owner, leads for nobody through the API. The arch rule covers `resident_id` as well as `user_id`.
+        - Seeders: Sadat City's emergency numbers everywhere; demo conversations, bookings in every status with their events, reviews, favorites, alerts, leads (one voided), commission entries, featured packages and placements, duty pharmacies for 14 days and news, in `local` and `testing` only.
+    - Verify: `sail composer check` green, with the mutation scores of `BookingStateMachine` and `CommissionBalance`; on `testing`, `migrate:fresh --seed` (timed), `migrate:rollback --step=<this step's migrations>` and `migrate` again; `\d leads` with its trigger; an `UPDATE` and a `DELETE` on `leads` refused in psql; row counts per new table and the demo bookings by status; ownership proven at the policy level for every table with an owner.
 - [ ] **1.4 Sign-in.** Sign in with Google and Apple (verified server-side from their ID tokens), a phone-verification interface with a `log` driver for local development and tests (rate limits per number and per IP), Sanctum tokens per device, `device_tokens`, sign-out, account deletion, user roles. No paid SMS (ADR 0003). Deleting an account closes the resident's brokered listings and keeps them, with their agreements and leads, and blanks the resident's personal data (DECISIONS 41).
 - [ ] **1.5 Admin panel foundation.** Filament with RTL Arabic, admin sign-in with 2FA, admin roles (`spatie/laravel-permission` + Filament Shield), activity log, resources for cities, districts, trades, categories and users.
 
@@ -72,7 +81,7 @@ Tick a box only after its verification has been run and passed. A step without a
 
 ## Phase 3 — Interaction and trust
 
-- [ ] **3.1 Bookings** with their state machine and events timeline; viewings of brokered properties create leads.
+- [ ] **3.1 Bookings** with their state machine and events timeline; viewings of brokered properties create leads. Rescheduling is not a status: it edits `scheduled_at` and records its own booking event (DECISIONS 60).
 - [ ] **3.2 Reviews** after a finished booking only; badges (verified, quick reply, jobs done).
 - [ ] **3.3 Urgent craftsman** ("in 30 minutes"): dispatch to the nearest three available, offers with arrival time, acceptance.
 - [ ] **3.4 Notifications** through FCM and the database; search alerts.

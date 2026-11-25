@@ -13,7 +13,8 @@ pest()->extend(TestCase::class)->use(RefreshDatabase::class);
 it('gives every model with an owner column a policy (invariant 1)', function (): void {
     $owned = array_filter(
         modelClasses(),
-        fn (string $model): bool => Schema::hasColumn(new $model()->getTable(), 'user_id'),
+        fn (string $model): bool => Schema::hasColumn(new $model()->getTable(), 'user_id')
+            || Schema::hasColumn(new $model()->getTable(), 'resident_id'),
     );
     $withoutPolicy = array_filter($owned, fn (string $model): bool => Gate::getPolicyFor($model) === null);
 

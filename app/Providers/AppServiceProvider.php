@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Bookings\Models\Booking;
+use App\Domains\Conversations\Models\Conversation;
+use App\Domains\Conversations\Models\Message;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Places\Models\Place;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
+use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -56,7 +60,7 @@ final class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Polymorphic columns (Sanctum's tokenable, reports' reportable) store these short names, never
+     * Polymorphic columns (Sanctum's tokenable, reportable, a lead's source, ...) store these short names, never
      * class names: moving a class does not break stored rows, and a model left out throws.
      */
     private function enforceMorphMap(): void
@@ -69,6 +73,10 @@ final class AppServiceProvider extends ServiceProvider
             'used_item' => UsedItem::class,
             'request' => ServiceRequest::class,
             'request_reply' => RequestReply::class,
+            'conversation' => Conversation::class,
+            'message' => Message::class,
+            'booking' => Booking::class,
+            'review' => Review::class,
         ]);
     }
 
