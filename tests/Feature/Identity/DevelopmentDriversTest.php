@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domains\Identity\Contracts\PhoneVerifier;
+use App\Domains\Identity\Drivers\IdentityTokenVerifiers;
 use App\Providers\IdentityServiceProvider;
 
 /**
@@ -44,6 +46,17 @@ it('boots in production with neither', function (): void {
     refuseDriversIn('production');
 
     expect(app()->environment())->toBe('production');
+});
+
+it('lets console commands that use no driver run, and refuses the drivers when resolved', function (): void {
+    config(['awez.sign_in.fake' => true, 'awez.phone_verification.driver' => 'log']);
+    app()->detectEnvironment(fn (): string => 'production');
+
+    // As Composer's package:discover runs during an install, before any .env exists.
+    new IdentityServiceProvider(app())->boot();
+
+    expect(fn () => app(PhoneVerifier::class))->toThrow(LogicException::class)
+        ->and(fn () => app(IdentityTokenVerifiers::class))->toThrow(LogicException::class);
 });
 
 it('keeps the fake sign-in off and the log driver on by default', function (): void {

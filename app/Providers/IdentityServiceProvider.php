@@ -23,7 +23,10 @@ use LogicException;
 
 /**
  * Sign-in and phone confirmation (ADR 0003): the drivers, built from config/awez.php, and the
- * refusal to boot with a development-only driver anywhere but local and testing.
+ * refusal to run a development-only driver anywhere but local and testing. The app serving
+ * requests refuses at boot; anything else (a queue worker, a command) refuses when it resolves
+ * a driver. Console commands that never touch one, such as Composer's package:discover during
+ * an install that has no .env yet, still run.
  */
 final class IdentityServiceProvider extends ServiceProvider
 {
@@ -54,10 +57,11 @@ final class IdentityServiceProvider extends ServiceProvider
             ));
         }
 
-        $this->app->bind(IdentityTokenVerifiers::class, fn (Application $app): IdentityTokenVerifiers => new IdentityTokenVerifiers(
-            $app,
-            Config::boolean('awez.sign_in.fake'),
-        ));
+        $this->app->bind(function (Application $app): IdentityTokenVerifiers {
+            $this->refuseDevelopmentDrivers();
+
+            return new IdentityTokenVerifiers($app, Config::boolean('awez.sign_in.fake'));
+        });
 
         $this->app->bind(PhoneCodeIssuer::class, fn (Application $app): PhoneCodeIssuer => new PhoneCodeIssuer(
             $app->make(PhoneCodeHasher::class),
@@ -65,18 +69,24 @@ final class IdentityServiceProvider extends ServiceProvider
             Config::integer('awez.phone_verification.expires_minutes'),
         ));
 
-        $this->app->bind(PhoneVerifier::class, fn (Application $app): PhoneVerifier => match (PhoneVerificationDriver::from(Config::string('awez.phone_verification.driver'))) {
-            PhoneVerificationDriver::Log => new LogPhoneVerifier(
-                $app->make(PhoneCodeIssuer::class),
-                $app->make(LogManager::class)->channel('phone_verification'),
-            ),
-            PhoneVerificationDriver::WhatsappInbound => throw new LogicException('The whatsapp_inbound phone verification driver comes with step 4.3b.'),
+        $this->app->bind(function (Application $app): PhoneVerifier {
+            $this->refuseDevelopmentDrivers();
+
+            return match (PhoneVerificationDriver::from(Config::string('awez.phone_verification.driver'))) {
+                PhoneVerificationDriver::Log => new LogPhoneVerifier(
+                    $app->make(PhoneCodeIssuer::class),
+                    $app->make(LogManager::class)->channel('phone_verification'),
+                ),
+                PhoneVerificationDriver::WhatsappInbound => throw new LogicException('The whatsapp_inbound phone verification driver comes with step 4.3b.'),
+            };
         });
     }
 
     public function boot(): void
     {
-        $this->refuseDevelopmentDrivers();
+        if (! $this->app->runningInConsole()) {
+            $this->refuseDevelopmentDrivers();
+        }
     }
 
     /**

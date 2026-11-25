@@ -62,7 +62,7 @@ No DNS or Dokploy changes yet.
 
 ## Verification
 
-**`sail composer check`:** Pint, Rector and Larastan (max level, no baseline) pass, and Pest passes 955 tests with 2,385 assertions in 37 s. Task 004 left 809. This task's new files hold 139 tests, ping's 5 are gone, and the tests that run once per model or per enum cover the three new models. The new files:
+**`sail composer check`:** Pint, Rector and Larastan (max level, no baseline) pass, and Pest passes 956 tests with 2,387 assertions in 38 s. Task 004 left 809. This task's new files hold 140 tests, ping's 5 are gone, and the tests that run once per model or per enum cover the three new models. The new files:
 
 | File | Tests | What |
 | --- | --- | --- |
@@ -72,12 +72,20 @@ No DNS or Dokploy changes yet.
 | `Identity/PhoneVerificationTest` | 20 | the challenge shape; only an HMAC stored; the code in its own log only, the number masked; confirming; wrong codes with attempts left; used up after five; expired after ten minutes; nothing to confirm; a new start replaces the open one; `phone_taken` at start and at confirmation; one's own number again; non-Egyptian or landline numbers; Arabic field names; each rate limit with `Retry-After`; no code sent over a limit; the WhatsApp challenge shape |
 | `Identity/DevicesTest` | 5 | saving and replacing a push token; one push token per device across accounts; an unknown platform; sign-out of one device takes its push token |
 | `Identity/DeleteAccountTest` | 13 | the anonymized row; tokens, links and confirmations gone; brokered properties archived with agreements and leads; other properties deleted or archived; provider archived; places released; used items; requests; favorites, alerts and reports; conversations, messages, bookings and reviews kept under the deleted name; no personal data in any API answer; a fresh account on signing in again; all or nothing |
-| `Identity/DevelopmentDriversTest` | 7 | boot refused with the fake sign-in or the `log` driver in production and staging; allowed in local and testing; defaults read from `config/awez.php` with the variables unset |
+| `Identity/DevelopmentDriversTest` | 8 | refused with the fake sign-in or the `log` driver in production and staging; allowed in local and testing; console commands that use no driver still boot, and the drivers throw when resolved; defaults read from `config/awez.php` with the variables unset |
 | `Ownership/AccountOwnershipTest` | 9 | no `api/v1` route takes an id; `me` always answers for the token's user; A cannot change B's profile, confirm with B's code, touch B's push token or delete B; the Identity policies deny everyone |
 | `Unit/Identity` | 9 | `RateLimit` (sliding window, `Retry-After`, edges) and `PhoneCodeHasher` |
 | `Arch/IdentityTest` | 4 | `Identity\Contracts` holds interfaces only; the drivers implement them; only `App\Domains\Identity` (and tests) use `Firebase\JWT` |
 
 `LocaleTest` and `ErrorResponsesTest` now use `GET me` and the Arabic field names. The schema tests cover the new foreign keys' delete rules. A random collision in task 004's demo seeder surfaced, and is fixed (see the follow-ups); its test then passed six runs in a row.
+
+**CI's first run failed** before the tests, at `composer install`. Its `package:discover` boots the app before CI writes a `.env`, so the environment is `production`, and the boot check refused the `log` driver; a production image build would fail the same way.
+
+- Console commands now skip the boot check.
+- The drivers refuse themselves wherever they are resolved, which a test proves.
+- The app serving requests still refuses to boot with either driver.
+
+A local `APP_ENV=production artisan package:discover` passes (DECISIONS 71).
 
 **Coverage** of `app/Domains`: 98.2% (810 of 825 statements). Not covered: the race in which another account confirms the same number between the check and the save (the unique index answers `phone_taken`), and two lines of the decoder.
 
