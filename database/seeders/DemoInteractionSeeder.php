@@ -18,6 +18,7 @@ use App\Domains\Commissions\Enums\CommissionEntryKind;
 use App\Domains\Commissions\Enums\LeadChannel;
 use App\Domains\Commissions\Models\CommissionEntry;
 use App\Domains\Commissions\Models\Lead;
+use App\Domains\Conversations\Enums\ConversationStatus;
 use App\Domains\Conversations\Enums\MessageKind;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
@@ -249,7 +250,13 @@ final class DemoInteractionSeeder extends Seeder
         $confirmed = Booking::query()->where('status', BookingStatus::Confirmed)->where('kind', BookingKind::ServiceVisit)->first();
 
         if ($confirmed instanceof Booking && $confirmed->bookable instanceof Provider) {
-            $conversation = $this->converse($confirmed->bookable, $confirmed->resident ?? throw new LogicException('A booking has a resident.'), $confirmed->counterpart_id);
+            $resident = $confirmed->resident ?? throw new LogicException('A booking has a resident.');
+            // The resident may already talk to this craftsman: one open conversation per subject.
+            $conversation = $resident->residentConversations()
+                ->where('subject_type', $confirmed->bookable->getMorphClass())
+                ->where('subject_id', $confirmed->bookable->getKey())
+                ->where('status', ConversationStatus::Open)
+                ->first() ?? $this->converse($confirmed->bookable, $resident, $confirmed->counterpart_id);
             $this->message($conversation, $this->staff->id, MessageKind::System, 'تم تأكيد الحجز.', CarbonImmutable::now()->subMinutes(30));
         }
     }

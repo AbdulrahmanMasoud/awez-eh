@@ -37,7 +37,8 @@ final class ApiExceptionRenderer
         }
 
         return match (true) {
-            $exception instanceof DomainException => $this->error($exception->status, $exception->errorCode, $exception->translationKey),
+            $exception instanceof DomainException => $this->error($exception->status, $exception->errorCode, $exception->translationKey, $exception->errors())
+                ->withHeaders($exception->headers()),
             $exception instanceof ValidationException => $this->error($exception->status, 'validation_failed', 'errors.validation_failed', $exception->errors()),
             $exception instanceof AuthenticationException => $this->error(Response::HTTP_UNAUTHORIZED, 'unauthenticated', 'errors.unauthenticated'),
             $exception instanceof HttpExceptionInterface => $this->httpError($exception),

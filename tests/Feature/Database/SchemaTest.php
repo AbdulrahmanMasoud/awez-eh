@@ -162,6 +162,8 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'commission_entries.recorded_by' => 'restrict',
         'conversations.counterpart_id' => 'cascade',
         'conversations.resident_id' => 'cascade',
+        'device_tokens.personal_access_token_id' => 'cascade',
+        'device_tokens.user_id' => 'cascade',
         // Reference data is never deleted from under content: admins deactivate it instead.
         'districts.city_id' => 'cascade',
         'duty_pharmacies.place_id' => 'cascade',
@@ -180,6 +182,7 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'news_items.city_id' => 'restrict',
         'news_items.created_by' => 'set null',
         'opening_hours.place_id' => 'cascade',
+        'phone_verifications.user_id' => 'cascade',
         'place_categories.parent_id' => 'restrict',
         'place_items.place_id' => 'cascade',
         'place_offers.place_id' => 'cascade',
@@ -192,7 +195,7 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'properties.city_id' => 'restrict',
         'properties.district_id' => 'restrict',
         'properties.reviewed_by' => 'set null',
-        // A resident's content goes with their account (DECISIONS.md, a Review item).
+        // Accounts are never hard-deleted (DECISIONS 56): DeleteAccount archives or deletes the content first.
         'properties.user_id' => 'cascade',
         'property_agreements.created_by' => 'set null',
         'property_agreements.property_id' => 'cascade',
@@ -218,10 +221,12 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'search_alerts.district_id' => 'restrict',
         'search_alerts.user_id' => 'cascade',
         'sessions.user_id' => 'cascade',
+        'social_accounts.user_id' => 'cascade',
         'used_items.city_id' => 'restrict',
         'used_items.district_id' => 'restrict',
         'used_items.reviewed_by' => 'set null',
         'used_items.user_id' => 'cascade',
+        'users.district_id' => 'restrict',
     ]);
 });
 

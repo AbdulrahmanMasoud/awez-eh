@@ -13,6 +13,9 @@ use App\Domains\Commissions\Models\Lead;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
 use App\Domains\Favorites\Models\Favorite;
+use App\Domains\Geography\Models\District;
+use App\Domains\Identity\Enums\UserLocale;
+use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Moderation\Models\Report;
 use App\Domains\Places\Models\Place;
@@ -23,19 +26,26 @@ use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
+use App\Support\Casts\PhoneNumberCast;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
+/**
+ * Every user is a resident; an advertiser or a provider is one by what they own, not by a role
+ * column. Admin roles come with step 1.5. Sign-in, the phone number, the status and deletion are
+ * the Identity Actions' to change, so only the profile is fillable.
+ */
+#[Fillable(['name', 'locale', 'district_id'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 final class User extends Authenticatable
@@ -48,6 +58,77 @@ final class User extends Authenticatable
     // Primary keys are UUID v7: HasUuids generates them time-ordered, so new rows append to the index.
     use HasUuids;
     use Notifiable;
+
+    /**
+     * The columns' defaults, so a new model knows them before it is saved and read back.
+     *
+     * @var array<string, string>
+     */
+    #[\Override]
+    protected $attributes = [
+        'status' => 'active',
+        'locale' => 'ar',
+    ];
+
+    public function isActive(): bool
+    {
+        return $this->status === UserStatus::Active;
+    }
+
+    public function needsPhone(): bool
+    {
+        return $this->phone === null;
+    }
+
+    /**
+     * Owns a listing (a property or a used item) or a place.
+     */
+    public function isAdvertiser(): bool
+    {
+        return $this->properties()->exists() || $this->usedItems()->exists() || $this->places()->exists();
+    }
+
+    /**
+     * Has a craftsman profile.
+     */
+    public function isProvider(): bool
+    {
+        return $this->provider()->exists();
+    }
+
+    /**
+     * @return HasMany<SocialAccount, $this>
+     */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /**
+     * @return HasMany<PhoneVerification, $this>
+     */
+    public function phoneVerifications(): HasMany
+    {
+        return $this->hasMany(PhoneVerification::class);
+    }
+
+    /**
+     * @return HasMany<DeviceToken, $this>
+     */
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    /**
+     * Where the resident lives, if they said.
+     *
+     * @return BelongsTo<District, $this>
+     */
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
+    }
 
     /**
      * Conversations the user opened as a resident.
@@ -303,6 +384,13 @@ final class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'phone' => PhoneNumberCast::class,
+            'phone_verified_at' => 'datetime',
+            'locale' => UserLocale::class,
+            'status' => UserStatus::class,
+            'suspended_at' => 'datetime',
+            'deleted_at' => 'datetime',
+            'last_seen_at' => 'datetime',
         ];
     }
 }
