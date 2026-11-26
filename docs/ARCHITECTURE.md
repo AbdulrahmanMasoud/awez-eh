@@ -77,6 +77,16 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 
 `draft → pending_review → published → (paused | sold/rented | rejected | archived)`. Transitions are Actions in the owning domain; each writes an activity log entry. Only `published` rows are visible in public endpoints. Properties, providers, places and used items are moderated this way; requests are public as soon as they are written, while open and not expired, and reports handle abuse.
 
+- **One machine, each domain's Actions** (ADR 0008): `ContentStatusMachine` decides every move for every kind. The owner submits, pauses, resumes, marks sold or rented (by the content's deal) and archives. A moderator approves, rejects and takes down, with a reason the owner reads in a database notification. A paused listing edited while paused, and a rejected one, go through review again. The domain's own Actions apply the move, log it (`admin` or `content` log) and dispatch an event after commit.
+- **Edits:** a published listing whose owner changes anything but the price, or adds a photo, goes back to `pending_review` and leaves the public lists until approved (DECISIONS 108).
+- **The review queue** (المراجعة) shows each kind registered as a `ReviewableKind`, oldest first; so does the dashboard's محتاج قرارك.
+
+### Real estate in the API
+
+- Public: `GET /properties` (filters, sorts, cursor pages; partial indexes on published rows), `GET /properties/{id}` (counts a view), `GET /real-estate/options` (cached until a district changes). The location is rounded to about 100 m for everyone but the owner (DECISIONS 109). A brokered property's advertiser is the platform, and asking its owner's number answers `contact_through_platform`.
+- The owner's: create (from uploads, as a draft or sent to review), edit (`photos` is the whole ordered list), submit, pause, resume, sold, rented, archive, and `GET /me/properties` with `allowed_actions`. Limits are `RealEstateSettings`.
+- The panel: العقارات (status tabs, the property's page with its point, owner, history and allowed moves), brokered properties created by sales with their agreements (a relation manager: record and view, never edit or delete), and the platform account (`awez:platform-account`) for owners without one.
+
 ## 7. Search and location
 
 - Text search goes through Scout with the database driver, on a `search_text` column per searchable table, normalized by `ArabicNormalizer` (`HasSearchText`), backed by a `pg_trgm` GIN index for typo tolerance. A term is compared with the text's words (`strict_word_similarity`), not with the whole text (DECISIONS 38 and 39).
@@ -89,7 +99,7 @@ For a listing with `brokered = true`, the API never returns the owner's phone nu
 
 ## 9. Notifications
 
-Laravel Notifications with the `database` and `fcm` channels; no SMS. Topics per city and district for broadcasts (the duty pharmacy, city news). Sending happens in queued jobs.
+Laravel Notifications with the `database` and `fcm` channels; no SMS. Topics per city and district for broadcasts (the duty pharmacy, city news). Push is sent from queued jobs; a database notification alone (a review's outcome, DECISIONS 115) is written when its event fires, after the commit.
 
 ## 10. API conventions
 

@@ -19,7 +19,7 @@ sail up -d                  # app (http://localhost:8020), PostgreSQL + PostGIS,
 sail composer dev           # queue worker and logs
 sail composer check         # THE gate: pint --test, rector --dry-run, phpstan, pest (unit + feature + arch)
 sail composer test          # pest unit + feature + arch, parallel
-sail composer test:mutate   # mutation testing of money, commissions and the booking state machine (score 100), run when they change
+sail composer test:mutate   # mutation testing of money, commissions and the booking and content state machines (score 100), run when they change
 sail composer fmt           # pint + rector (writes)
 sail composer docs          # API docs (Scribe) at http://localhost:8020/docs, in local only
 sail npm ci && sail npm run build   # the admin panel's theme and its font (public/build); some tests read it
@@ -107,6 +107,8 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 **Media.** Photos go through `AddImage` (cleaned first, ADR 0007) into a collection the model declares with `InteractsWithMediaCollections`, which takes its disks from `config('awez.media.*')`: never name a disk. The API shows a photo through `MediaResource` (its two sizes), never its original. Listings receive the app's uploads through `AttachUploads`.
 
+**Moderated content.** Status changes ask `ContentStatusMachine` (ADR 0008) through the owning domain's own Actions (`SubmitProperty`, `ApproveProperty`, …), which lock the row, log the move (`admin` log for moderators, `content` for owners) and dispatch an event after commit. Public endpoints show `published` rows only; the owner sees their own in every status with `allowed_actions`. A new moderated kind registers a `ReviewableKind` in `ReviewKinds` (AdminPanelServiceProvider) to appear in المراجعة.
+
 **Errors.** Domain errors extend `App\Exceptions\DomainException` (error code, translation key, HTTP status) and live in the domain's `Exceptions/`. Rendering is mapped once in `bootstrap/app.php`.
 
 **Admin panel (Filament).** Every resource is authorized by a Policy and an admin role (`spatie/laravel-permission` with Filament Shield): policies ask `$user->mayAdminister('Affix:Subject')` beside their resident rules, which counts only inside the panel (DECISIONS 86). Every admin action writes an entry in the activity log (`spatie/laravel-activitylog`, log `admin`) with the admin, the reason and before and after, through the Action that does it or `LogsAdminChanges`; never personal data. Admins exist only through `awez:create-admin`.
@@ -135,7 +137,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 - `Http::preventStrayRequests()` is on for all tests. Google, Apple, WhatsApp, FCM and storage are faked.
 - Use factories, never hand-built rows. Moderated content from a factory is pending review, as new content is: use `published()` for public rows. A bug fix starts with a failing test.
 - Run the tests after formatting, not only before.
-- Coverage: `--min=85` for `app/Domains`. Mutation testing for money, commissions and booking state machines.
+- Coverage: `--min=85` for `app/Domains`. Mutation testing for money, commissions, and the booking and content state machines.
 
 ### Architecture tests (`tests/Arch`) enforce
 
