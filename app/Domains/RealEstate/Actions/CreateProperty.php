@@ -56,7 +56,7 @@ final readonly class CreateProperty
 
             return $data->submit
                 ? $this->changePropertyStatus->handle($property, ContentAction::Submit, $owner)
-                : $property;
+                : $property->refresh();
         });
     }
 

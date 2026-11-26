@@ -43,9 +43,10 @@ final class ListPropertiesRequest extends FormRequest
             'district_id' => ['nullable', 'array'],
             'district_id.*' => ['uuid'],
             'price_min' => ['nullable', ...PropertyRules::pounds()],
-            'price_max' => ['nullable', ...PropertyRules::pounds(), 'gte:price_min'],
+            // gte fails when the other field is missing, so it is asked only with both.
+            'price_max' => ['nullable', ...PropertyRules::pounds(), ...($this->filled('price_min') ? ['gte:price_min'] : [])],
             'area_min' => ['nullable', 'integer', 'min:1'],
-            'area_max' => ['nullable', 'integer', 'min:1', 'gte:area_min'],
+            'area_max' => ['nullable', 'integer', 'min:1', ...($this->filled('area_min') ? ['gte:area_min'] : [])],
             'bedrooms_min' => ['nullable', 'integer', 'min:0'],
             'furnished' => ['nullable', Rule::in(self::BOOLEANS)],
             'finishing' => ['nullable', Rule::enum(Finishing::class)],

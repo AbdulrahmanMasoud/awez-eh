@@ -49,11 +49,12 @@ final readonly class ArrangeCollection
                 ->get()
                 ->keyBy('id');
 
+            // Eloquent's except() filters by primary key.
             $removed = $held->except($ids);
             $new = array_values(array_diff($ids, $held->keys()->all()));
 
             // Rows go now, files once the transaction commits.
-            Media::query()->whereKey($removed->keys()->all())->delete();
+            Media::query()->whereKey($removed->modelKeys())->delete();
             DB::afterCommit(function () use ($removed): void {
                 $removed->each(fn (Media $media) => $this->filesystem->removeAllFiles($media));
             });

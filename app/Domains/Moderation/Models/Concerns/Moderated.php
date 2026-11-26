@@ -20,12 +20,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 trait Moderated
 {
     /**
-     * The column's default, so a new model knows its status before it is saved and read back.
+     * The columns' defaults, so a new model knows them before it is saved and read back.
      * The model casts `status`, `reviewed_at` and `published_at` in its own casts().
      */
     protected function initializeModerated(): void
     {
         $this->attributes['status'] ??= ContentStatus::PendingReview->value;
+        $this->attributes['changed_since_review'] ??= false;
     }
 
     /**

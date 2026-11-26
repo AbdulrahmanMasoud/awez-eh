@@ -33,10 +33,11 @@ it('takes no user id on any account route', function (): void {
     $routes = collect(Route::getRoutes()->getRoutes())
         ->filter(fn (RoutingRoute $route): bool => str_starts_with($route->uri(), 'api/v1/'));
 
-    // The only id a route takes is an upload's, and PendingUploadPolicy answers 404 for anyone
-    // but its uploader (tests/Feature/Media/PendingUploadsTest.php).
+    // The ids a route takes are an upload's, which PendingUploadPolicy answers 404 for anyone but
+    // its uploader (tests/Feature/Media/PendingUploadsTest.php), and a property's, which
+    // PropertyPolicy guards (tests/Feature/RealEstate/PropertyOwnershipTest.php).
     expect($routes)->not->toBeEmpty()
-        ->and($routes->filter(fn (RoutingRoute $route): bool => $route->parameterNames() !== [])->map(fn (RoutingRoute $route): array => $route->parameterNames())->flatten()->unique()->values()->all())->toBe(['upload']);
+        ->and($routes->filter(fn (RoutingRoute $route): bool => $route->parameterNames() !== [])->map(fn (RoutingRoute $route): array => $route->parameterNames())->flatten()->unique()->sort()->values()->all())->toBe(['property', 'upload']);
 });
 
 it('answers me for the token\'s user whatever else the request names', function (): void {
