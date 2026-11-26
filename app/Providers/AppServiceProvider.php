@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Domains\Bookings\Models\Booking;
+use App\Domains\CityGuide\Models\GuideEntry;
+use App\Domains\CityGuide\Models\NewsItem;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
+use App\Domains\Media\Models\Media;
+use App\Domains\Media\Models\PendingUpload;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Places\Models\Place;
 use App\Domains\Places\Models\PlaceCategory;
+use App\Domains\Places\Models\PlaceItem;
 use App\Domains\RealEstate\Models\Property;
+use App\Domains\RealEstate\Models\PropertyAgreement;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Reviews\Models\Review;
@@ -67,7 +74,9 @@ final class AppServiceProvider extends ServiceProvider
         Password::defaults(fn (): Password => Password::min(self::MIN_PASSWORD_LENGTH)->max(self::MAX_PASSWORD_LENGTH));
 
         // `composer dev` runs the queue worker and the logs: Sail already serves the app on
-        // APP_PORT, and there is no frontend to build.
+        // APP_PORT, and there is no frontend to build. The worker also takes the `media` queue,
+        // where photos' sizes are made (production's worker needs the same list).
+        DevCommands::artisan('queue:listen --queue=default,'.Config::string('awez.media.queue').' --tries=1 --timeout=0', 'queue');
         DevCommands::only('queue', 'logs');
     }
 
@@ -89,6 +98,13 @@ final class AppServiceProvider extends ServiceProvider
             'message' => Message::class,
             'booking' => Booking::class,
             'review' => Review::class,
+            // Media's owners (media.model_type), and media itself as the activity log's subject.
+            'property_agreement' => PropertyAgreement::class,
+            'place_item' => PlaceItem::class,
+            'guide_entry' => GuideEntry::class,
+            'news_item' => NewsItem::class,
+            'pending_upload' => PendingUpload::class,
+            'media' => Media::class,
             // Reference data, as the activity log's subjects.
             'city' => City::class,
             'district' => District::class,
@@ -110,6 +126,15 @@ final class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(Config::integer('awez.rate_limits.api.per_ip_per_minute'))
                 ->by('ip:'.$request->ip());
+        });
+
+        // Uploads cost a decode and two conversions each: a separate, smaller budget per account
+        // (MediaSettings, photos and avatars together). Only signed-in routes use it.
+        RateLimiter::for('uploads', function (Request $request): Limit {
+            $user = $request->user();
+
+            return Limit::perHour(resolve(MediaSettings::class)->uploads_per_hour)
+                ->by('uploads:'.($user instanceof User ? $user->id : $request->ip()));
         });
     }
 }

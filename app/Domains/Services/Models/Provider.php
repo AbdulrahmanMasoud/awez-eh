@@ -7,6 +7,9 @@ namespace App\Domains\Services\Models;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Concerns\Moderated;
 use App\Domains\Moderation\Models\Concerns\Reportable;
@@ -33,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['display_name', 'bio', 'city_id', 'district_id', 'location', 'service_radius_m', 'years_experience', 'is_available'])]
 #[UseFactory(ProviderFactory::class)]
 #[UsePolicy(ProviderPolicy::class)]
-final class Provider extends Model
+final class Provider extends Model implements HasMediaCollections
 {
     /** @use HasFactory<ProviderFactory> */
     use HasFactory;
@@ -41,6 +44,7 @@ final class Provider extends Model
     use HasLocation;
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
     use Moderated;
     use Reportable;
 
@@ -82,6 +86,18 @@ final class Provider extends Model
     public function prices(): HasMany
     {
         return $this->hasMany(ProviderPrice::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('avatar')->singleFile();
+        // Photos of jobs done, in the order the provider gives them.
+        $this->addImageCollection('work');
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return ['work' => $settings->provider_work_photos];
     }
 
     /**

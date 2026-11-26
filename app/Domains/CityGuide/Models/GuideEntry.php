@@ -6,6 +6,9 @@ namespace App\Domains\CityGuide\Models;
 
 use App\Domains\CityGuide\Enums\GuideCategory;
 use App\Domains\Geography\Models\City;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Support\Casts\PointCast;
 use App\Support\Geo\HasLocation;
 use App\Support\Text\HasSearchText;
@@ -25,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Fillable(['category', 'title', 'body', 'phone_display', 'location', 'sort_order', 'is_published'])]
 #[UseFactory(GuideEntryFactory::class)]
-final class GuideEntry extends Model
+final class GuideEntry extends Model implements HasMediaCollections
 {
     /** @use HasFactory<GuideEntryFactory> */
     use HasFactory;
@@ -33,6 +36,7 @@ final class GuideEntry extends Model
     use HasLocation;
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
 
     /**
      * @return BelongsTo<City, $this>
@@ -40,6 +44,16 @@ final class GuideEntry extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('image')->singleFile();
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return [];
     }
 
     /**

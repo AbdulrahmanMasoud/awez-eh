@@ -12,6 +12,9 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Enums\ItemCondition;
 use App\Domains\Marketplace\Enums\UsedItemCategory;
 use App\Domains\Marketplace\Policies\UsedItemPolicy;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Concerns\Moderated;
 use App\Domains\Moderation\Models\Concerns\Reportable;
@@ -36,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 #[Fillable(['category', 'title', 'description', 'price', 'negotiable', 'condition', 'city_id', 'district_id', 'location'])]
 #[UseFactory(UsedItemFactory::class)]
 #[UsePolicy(UsedItemPolicy::class)]
-final class UsedItem extends Model
+final class UsedItem extends Model implements HasMediaCollections
 {
     /** @use HasFactory<UsedItemFactory> */
     use HasFactory;
@@ -44,6 +47,7 @@ final class UsedItem extends Model
     use HasLocation;
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
     use Moderated;
     use Reportable;
 
@@ -106,6 +110,16 @@ final class UsedItem extends Model
             || $this->favorites()->exists()
             || $this->featuredPlacements()->exists()
             || $this->reports()->exists();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('photos');
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return ['photos' => $settings->used_item_photos];
     }
 
     /**

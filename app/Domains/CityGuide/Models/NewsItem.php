@@ -6,6 +6,9 @@ namespace App\Domains\CityGuide\Models;
 
 use App\Domains\Geography\Models\City;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Support\Text\HasSearchText;
 use Database\Factories\NewsItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,13 +23,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Fillable(['title', 'body', 'is_published', 'published_at'])]
 #[UseFactory(NewsItemFactory::class)]
-final class NewsItem extends Model
+final class NewsItem extends Model implements HasMediaCollections
 {
     /** @use HasFactory<NewsItemFactory> */
     use HasFactory;
 
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
 
     /**
      * @return BelongsTo<City, $this>
@@ -44,6 +48,16 @@ final class NewsItem extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('image')->singleFile();
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return [];
     }
 
     /**

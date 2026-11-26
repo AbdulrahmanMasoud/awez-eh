@@ -11,6 +11,7 @@ use App\Exceptions\InvalidPhoneNumber;
 use App\Filament\Navigation\AdminNavigationGroup;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Pages\ViewUser;
+use App\Filament\Support\MediaFields;
 use App\Support\PhoneNumber;
 use BackedEnum;
 use Filament\Actions\ViewAction;
@@ -178,6 +179,12 @@ final class UserResource extends Resource
     {
         return $schema->components([
             Section::make(__('admin.users.sections.profile'))->columns(2)->schema([
+                // The picture the resident uploaded; the Google or Apple one is not stored here.
+                MediaFields::entry(User::AVATAR)
+                    ->label(__('admin.users.fields.avatar'))
+                    ->circular()
+                    ->placeholder('—')
+                    ->columnSpanFull(),
                 TextEntry::make('name')->label(__('admin.users.fields.name')),
                 TextEntry::make('phone')
                     ->label(__('admin.users.fields.phone'))

@@ -6,11 +6,16 @@ namespace App\Domains\RealEstate\Models;
 
 use App\Domains\Commissions\Models\CommissionEntry;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
+use App\Domains\RealEstate\Policies\PropertyAgreementPolicy;
 use App\Support\Casts\MoneyCast;
 use App\Support\Casts\PhoneNumberCast;
 use Database\Factories\PropertyAgreementFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,12 +28,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['owner_name', 'owner_phone', 'commission_rate_basis_points', 'commission_fixed', 'signed_on', 'ends_on', 'notes'])]
 #[UseFactory(PropertyAgreementFactory::class)]
-final class PropertyAgreement extends Model
+#[UsePolicy(PropertyAgreementPolicy::class)]
+final class PropertyAgreement extends Model implements HasMediaCollections
 {
     /** @use HasFactory<PropertyAgreementFactory> */
     use HasFactory;
 
     use HasUuids;
+    use InteractsWithMediaCollections;
 
     /**
      * @return HasMany<CommissionEntry, $this>
@@ -54,6 +61,17 @@ final class PropertyAgreement extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Scanned pages of the signed agreement: PDF or photos, on the private disk. */
+    public function registerMediaCollections(): void
+    {
+        $this->addPrivateDocumentCollection('documents');
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return ['documents' => $settings->agreement_documents];
     }
 
     /**

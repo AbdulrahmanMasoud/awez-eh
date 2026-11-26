@@ -184,6 +184,7 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'news_items.city_id' => 'restrict',
         'news_items.created_by' => 'set null',
         'opening_hours.place_id' => 'cascade',
+        'pending_uploads.user_id' => 'cascade',
         'phone_verifications.user_id' => 'cascade',
         'place_categories.parent_id' => 'restrict',
         'place_items.place_id' => 'cascade',

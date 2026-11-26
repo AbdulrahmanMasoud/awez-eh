@@ -30,7 +30,7 @@ return [
             'pages' => true,
             'widgets' => false,
             'resources' => true,
-            'custom_permissions' => false,
+            'custom_permissions' => true,
         ],
     ],
 
@@ -253,7 +253,10 @@ return [
     |
     */
 
-    'custom_permissions' => [],
+    // Permissions no resource or page carries yet (App\Domains\Identity\Support\AdminPermissions).
+    'custom_permissions' => [
+        'ViewDocuments:PropertyAgreement' => 'View the documents of brokerage agreements',
+    ],
 
     /*
     |--------------------------------------------------------------------------

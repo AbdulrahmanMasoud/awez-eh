@@ -10,6 +10,7 @@ use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Support\SuperAdmins;
 use App\Domains\Marketplace\Actions\RemoveAccountUsedItems;
+use App\Domains\Media\Actions\DeleteAccountMedia;
 use App\Domains\Moderation\Actions\WithdrawAccountReports;
 use App\Domains\Places\Actions\ReleaseAccountPlaces;
 use App\Domains\RealEstate\Actions\RemoveAccountProperties;
@@ -35,6 +36,7 @@ final readonly class DeleteAccount
         private DeleteAccountFavorites $favorites,
         private DeleteAccountSearchAlerts $searchAlerts,
         private WithdrawAccountReports $reports,
+        private DeleteAccountMedia $media,
         private SuperAdmins $superAdmins,
         private Config $config,
     ) {}
@@ -60,6 +62,7 @@ final readonly class DeleteAccount
             $this->favorites->handle($user);
             $this->searchAlerts->handle($user);
             $this->reports->handle($user);
+            $this->media->handle($user);
 
             $this->anonymize($user);
         });

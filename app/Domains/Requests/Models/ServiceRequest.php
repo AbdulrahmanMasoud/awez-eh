@@ -7,6 +7,9 @@ namespace App\Domains\Requests\Models;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Moderation\Models\Concerns\Reportable;
 use App\Domains\Places\Models\PlaceCategory;
 use App\Domains\Requests\Enums\RequestArea;
@@ -36,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Table(name: 'requests')]
 #[UseFactory(ServiceRequestFactory::class)]
 #[UsePolicy(ServiceRequestPolicy::class)]
-final class ServiceRequest extends Model
+final class ServiceRequest extends Model implements HasMediaCollections
 {
     /** @use HasFactory<ServiceRequestFactory> */
     use HasFactory;
@@ -44,6 +47,7 @@ final class ServiceRequest extends Model
     use HasLocation;
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
     use Reportable;
 
     /**
@@ -101,6 +105,17 @@ final class ServiceRequest extends Model
     public function isOpen(): bool
     {
         return $this->status === RequestStatus::Open && $this->expires_at->isFuture();
+    }
+
+    /** What the resident shows of the job: a broken tap, a wall to paint. */
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('photos');
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return ['photos' => $settings->request_photos];
     }
 
     /**

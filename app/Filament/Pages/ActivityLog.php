@@ -128,6 +128,15 @@ final class ActivityLog extends Page implements HasTable
 
     private function subjectLabel(Activity $activity): string
     {
+        // Settings have no row of their own: the entry names their group (AdminLog::recordSettings).
+        $group = $activity->properties?->get('settings');
+
+        if ($activity->subject_type === null && is_string($group)) {
+            $label = __("admin.settings_groups.{$group}");
+
+            return is_string($label) ? $label : $group;
+        }
+
         $type = (string) $activity->subject_type;
         $label = __("admin.activity.subjects.{$type}");
         $subject = $activity->subject;
