@@ -125,6 +125,8 @@ final class UserResource extends Resource
                 TextColumn::make('phone')
                     ->label(__('admin.users.fields.phone'))
                     ->formatStateUsing(fn (?PhoneNumber $state): ?string => $state?->mask())
+                    // A number reads left to right inside Arabic text.
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->placeholder('—'),
                 TextColumn::make('email')->label(__('admin.users.fields.email'))->placeholder('—'),
                 self::statusColumn(),
@@ -189,6 +191,7 @@ final class UserResource extends Resource
                 TextEntry::make('phone')
                     ->label(__('admin.users.fields.phone'))
                     ->formatStateUsing(fn (?PhoneNumber $state): ?string => $state?->mask())
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->placeholder('—'),
                 TextEntry::make('email')->label(__('admin.users.fields.email'))->placeholder('—'),
                 TextEntry::make('status')

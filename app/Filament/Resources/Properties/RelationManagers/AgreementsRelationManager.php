@@ -80,7 +80,7 @@ final class AgreementsRelationManager extends RelationManager
     {
         return $schema->components([
             TextEntry::make('owner_name')->label(__('admin.agreements.fields.owner_name')),
-            TextEntry::make('owner_phone')->label(__('admin.agreements.fields.owner_phone'))->formatStateUsing(fn (?PhoneNumber $state): ?string => $state?->mask()),
+            TextEntry::make('owner_phone')->label(__('admin.agreements.fields.owner_phone'))->formatStateUsing(fn (?PhoneNumber $state): ?string => $state?->mask())->extraAttributes(['dir' => 'ltr']),
             TextEntry::make('commission')->label(__('admin.agreements.fields.commission'))->state(fn (PropertyAgreement $record): string => $this->commission($record)),
             TextEntry::make('signed_on')->label(__('admin.agreements.fields.signed_on'))->date(),
             TextEntry::make('ends_on')->label(__('admin.agreements.fields.ends_on'))->date()->placeholder('—'),
@@ -94,7 +94,7 @@ final class AgreementsRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('owner_name')->label(__('admin.agreements.fields.owner_name')),
-                TextColumn::make('owner_phone')->label(__('admin.agreements.fields.owner_phone'))->formatStateUsing(fn (?PhoneNumber $state): ?string => $state?->mask()),
+                TextColumn::make('owner_phone')->label(__('admin.agreements.fields.owner_phone'))->formatStateUsing(fn (?PhoneNumber $state): ?string => $state?->mask())->extraAttributes(['dir' => 'ltr']),
                 TextColumn::make('commission')->label(__('admin.agreements.fields.commission'))->state(fn (PropertyAgreement $record): string => $this->commission($record)),
                 TextColumn::make('signed_on')->label(__('admin.agreements.fields.signed_on'))->date(),
                 TextColumn::make('ends_on')->label(__('admin.agreements.fields.ends_on'))->date()->placeholder('—'),

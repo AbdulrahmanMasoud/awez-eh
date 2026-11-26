@@ -39,7 +39,9 @@ final class UpdatePropertyRequest extends FormRequest
     public function rules(): array
     {
         $fields = array_map(fn (array $rules): array => ['sometimes', ...$rules], PropertyRules::fields());
-        $rent = $this->property()->purpose === PropertyPurpose::Rent;
+        // Unbound only while the API docs are generated: they show the rule of a rent.
+        $property = $this->route('property');
+        $rent = ! $property instanceof Property || $property->purpose === PropertyPurpose::Rent;
 
         return [
             ...$fields,

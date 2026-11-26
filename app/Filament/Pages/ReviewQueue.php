@@ -101,7 +101,8 @@ final class ReviewQueue extends Page implements HasTable
     private function tabs(): array
     {
         return array_map(
-            fn (ReviewableKind $kind): Tab => Tab::make($kind->label())->badge($kind->pending()->count())->badgeColor('warning'),
+            // A closure, so the count is read again after each approval or rejection.
+            fn (ReviewableKind $kind): Tab => Tab::make($kind->label())->badge(fn (): int => $kind->pending()->count())->badgeColor('warning'),
             resolve(ReviewKinds::class)->for($this->admin()),
         );
     }

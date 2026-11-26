@@ -27,6 +27,7 @@ use BackedEnum;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use Carbon\CarbonInterface;
 use Closure;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -49,7 +50,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Spatie\Activitylog\Models\Activity;
@@ -154,6 +154,8 @@ final class PropertyResource extends Resource
                 TextEntry::make('owner_phone')
                     ->label(__('admin.properties.fields.owner_phone'))
                     ->state(fn (Property $record): ?string => self::maskedOwnerPhone($record))
+                    // A number reads left to right inside Arabic text.
+                    ->extraAttributes(['dir' => 'ltr'])
                     ->placeholder('—'),
                 IconEntry::make('brokered')->label(__('admin.properties.fields.brokered'))->boolean(),
             ]),
@@ -177,7 +179,7 @@ final class PropertyResource extends Resource
                         TextEntry::make('event')->hiddenLabel()->badge(),
                         TextEntry::make('change')->hiddenLabel(),
                         TextEntry::make('by')->hiddenLabel(),
-                        TextEntry::make('at')->hiddenLabel(),
+                        TextEntry::make('at')->hiddenLabel()->extraAttributes(['dir' => 'ltr']),
                         TextEntry::make('reason')->hiddenLabel()->placeholder('—'),
                     ])
                     ->columns(5)
@@ -385,7 +387,7 @@ final class PropertyResource extends Resource
                         ? (string) __('admin.properties.status_change', ['from' => self::statusLabel($from), 'to' => self::statusLabel($to)])
                         : null,
                     'by' => $causer instanceof User ? $causer->name : null,
-                    'at' => $created instanceof Carbon ? $created->setTimezone(Config::string('awez.display_timezone'))->format('Y-m-d H:i') : null,
+                    'at' => $created instanceof CarbonInterface ? $created->setTimezone(Config::string('awez.display_timezone'))->format('Y-m-d H:i') : null,
                     'reason' => is_string($entry->properties?->get('reason')) ? $entry->properties->get('reason') : null,
                 ];
             })

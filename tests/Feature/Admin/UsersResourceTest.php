@@ -54,6 +54,15 @@ it('lists numbers masked, never in full', function (): void {
         ->assertDontSee('+201012345678');
 });
 
+it('writes masked numbers left to right, so Arabic text does not reverse them', function (): void {
+    actingAsAdmin();
+    $resident = User::factory()->withPhone('01012345678')->create();
+
+    // The number's cell and entry carry dir="ltr": in RTL, "010*****678" would read "678*****010".
+    expect(preg_match('/dir="ltr"[^>]*>(?:(?!<\/).|\s)*?010\*{5}678/s', (string) $this->get(UserResource::getUrl('index'))->getContent()))->toBe(1)
+        ->and(preg_match('/dir="ltr"[^>]*>(?:(?!<\/).|\s)*?010\*{5}678/s', (string) $this->get(UserResource::getUrl('view', ['record' => $resident]))->getContent()))->toBe(1);
+});
+
 it('filters users by status, confirmed phone, craftsman, advertiser and admin', function (): void {
     $admin = actingAsAdmin();
     $suspended = User::factory()->suspended()->create();
