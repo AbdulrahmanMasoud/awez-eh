@@ -9,3 +9,4 @@ Questions waiting on the owner, and known issues not fixed yet.
 5. Sadat City's hospitals and transport lines for the city guide (DECISIONS 67).
 6. The Google OAuth client ids (Android, iOS, web) and Apple's bundle id for `AWEZ_GOOGLE_CLIENT_IDS` and `AWEZ_APPLE_CLIENT_IDS` (BUILD_PLAN phase 0). Until then, every real ID token is refused and only the fake sign-in works, locally.
 7. The digit style in the mobile app (Arabic-Indic `٤٢٬٥٠٠` or Western `42,500`). The admin panel's is settled: Western digits (DECISIONS 97).
+8. Known issue: HEIC photos are refused. Sail's ImageMagick lists HEIC but its libheif has no HEVC decoder (DECISIONS 100), so the mobile app must send JPEG (Expo's image picker and manipulator can). Reading HEIC needs libheif's HEVC plugin (`libheif-plugin-libde265`) in the production image, for step 4.4 to decide.
