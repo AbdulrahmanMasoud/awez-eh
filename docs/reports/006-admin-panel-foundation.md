@@ -52,6 +52,8 @@
 
 ## Decisions for the owner
 
+All answered (see the update at the end).
+
 1. **The font comes from a CDN.**
     - Readex Pro loads from Bunny Fonts (a privacy-respecting mirror of Google Fonts) on every page, through Filament's default font loading.
     - During the real run this machine lost internet for a while, and each page waited for the font until the request failed.
@@ -154,7 +156,6 @@ $ artisan migrate                       (all five up again)
 ## Not done and follow-ups
 
 - **A map picker** for city and district centres (MapLibre, ADR 0005). Coordinates are typed for now, as the brief says.
-- **Self-hosting Readex Pro** (decision 1).
 - **The language switch has no automated test.** Filament draws the user menu in its layout, outside a page Livewire can test. It was checked in the real run, and the locale itself is tested.
 - **The account page's counts** add up what exists today (listings, places, requests, replies, bookings, reviews). New kinds join with their steps.
 
@@ -180,4 +181,25 @@ $ artisan migrate                       (all five up again)
     - `composer install` runs `filament:upgrade`, which publishes Filament's assets to `public/js/filament`, `public/css/filament` and `public/fonts/filament`;
     - all of these folders are git-ignored and built on deploy.
 - **The first admin in production:** `php artisan awez:create-admin` in a terminal on the server (step 4.4).
-- **Outbound HTTPS** from admins' browsers to `fonts.bunny.net`, until decision 1.
+- **The build** downloads Readex Pro from Bunny Fonts; pages never fetch a font (update below).
+
+## Update (2026-11-26)
+
+The owner's answers:
+
+1. **Readex Pro is self-hosted.**
+    - Laravel's Vite plugin downloads it at build time: weights 300 to 700, the Arabic and Latin subsets, each with its unicode range, 20 files of 10 to 19 kB.
+    - The panel prints those font faces itself, with Filament's local font provider, so no page asks a font CDN for anything.
+    - The live sign-in page loads only `/build/assets/readex-pro-…woff2` files, and a test checks that no font host appears (DECISIONS 96).
+2. **The review queue ignores the period filter:** approved.
+3. **Rolling windows:** approved.
+4. **The groups as they are:** approved.
+5. **Western digits (0-9) everywhere in the panel**, numbers, money and dates included, with the text in Arabic.
+    - The panel's number locale is `ar-u-nu-latn` (Arabic with Latin digits), set in one place for Laravel's `Number` and Filament's tables and schemas: `1,234,567.5`, `42,500.00 ج.م.`.
+    - Carbon already writes Western digits in Arabic dates.
+    - A test renders the dashboard, the users list, a user's page, the activity log and the cities list in Arabic and finds no Arabic-Indic digit (DECISIONS 97).
+    - `ADMIN_PANEL.md` says so, and OPEN_QUESTIONS 7 now asks only about the mobile app.
+
+**Verification:** `sail composer check` passes: Pint, Rector, Larastan, and Pest with 1,065 tests and 2,822 assertions. The theme builds with `sail npm run build`. The new `Admin/PanelLookTest` adds 8 tests: the font, the digits on five pages, the number and money formats, and the locale choice.
+
+**Deploy notes, added:** the theme build needs network access to Bunny Fonts, once per build. `composer test` reads the theme build for the font test, so run `sail npm run build` first (CI does).

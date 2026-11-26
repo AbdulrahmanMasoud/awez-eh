@@ -22,6 +22,7 @@ sail composer test          # pest unit + feature + arch, parallel
 sail composer test:mutate   # mutation testing of money, commissions and the booking state machine (score 100), run when they change
 sail composer fmt           # pint + rector (writes)
 sail composer docs          # API docs (Scribe) at http://localhost:8020/docs, in local only
+sail npm ci && sail npm run build   # the admin panel's theme and its font (public/build); some tests read it
 sail artisan migrate:fresh --seed
 ```
 

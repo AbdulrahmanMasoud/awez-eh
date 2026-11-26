@@ -12,6 +12,13 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
+                // The admin panel's font, downloaded at build time and served from public/build:
+                // no font CDN at run time (DECISIONS 96).
+                bunny('Readex Pro', {
+                    weights: [300, 400, 500, 600, 700],
+                    subsets: ['arabic', 'latin'],
+                    fallbacks: ['sans-serif'],
+                }),
             ],
         }),
         tailwindcss(),

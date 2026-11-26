@@ -13,23 +13,30 @@ use App\Filament\Pages\Dashboard;
 use App\Http\Middleware\Admin\AuthenticateAdmin;
 use App\Http\Middleware\Admin\SetAdminLocale;
 use App\Support\AdminArea;
+use App\Support\AdminNumbers;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Facades\Filament;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Livewire\Component;
 
@@ -47,6 +54,11 @@ final class AdminPanelServiceProvider extends PanelProvider
 
         // Admin permissions count only inside this panel (DECISIONS 86).
         AdminArea::detectUsing(static fn (): bool => Filament::getCurrentPanel()?->getId() === self::ID);
+
+        // Tables, forms and infolists format numbers in Western digits (DECISIONS 97), read per
+        // request since the language is the admin's.
+        Table::configureUsing(fn (Table $table): Table => $table->defaultNumberLocale(fn (): string => AdminNumbers::localeFor(app()->getLocale())));
+        Schema::configureUsing(fn (Schema $schema): Schema => $schema->defaultNumberLocale(fn (): string => AdminNumbers::localeFor(app()->getLocale())));
     }
 
     public function panel(Panel $panel): Panel
@@ -64,7 +76,10 @@ final class AdminPanelServiceProvider extends PanelProvider
                 'gray' => Color::hex('#5C6B63'),
                 'info' => Color::hex('#3A4A8C'),
             ])
-            ->font('Readex Pro')
+            // Served from the theme build, never from a font CDN (DECISIONS 96): the local provider
+            // prints nothing, and the head hook below prints the build's font faces.
+            ->font('Readex Pro', provider: LocalFontProvider::class)
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): Htmlable => Vite::fonts('readex-pro'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->darkMode(false)
             ->sidebarCollapsibleOnDesktop()

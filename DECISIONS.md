@@ -273,15 +273,24 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - The read-only page (`سجل النشاط`) is for `View:ActivityLog`, which is `super_admin`'s by default.
 91. **The panel's look and language** (docs/design/ADMIN_PANEL.md).
     - The theme is Filament's own (`make:filament-theme`), built by Vite inside Sail and in CI. The brand colours are the panel's colour map, and the theme file adds the background, the radii and the dark stat card.
-    - Readex Pro comes from Filament's default font provider (Bunny Fonts, a privacy-respecting mirror of Google Fonts).
+    - Readex Pro is self-hosted (entry 96).
     - The language is the admin's `users.locale` (`SetAdminLocale`), Arabic before signing in, switched from the user menu; Filament's Arabic translations make the layout right to left.
-    - The navigation groups are an enum in the design's order. Reference data, users, roles and the activity log sit under النظام, the only group with entries yet.
+    - The navigation groups are an enum in the design's order. Reference data, users, roles and the activity log sit under النظام, the only group with entries yet (approved by the owner).
     - Lucide icons are drawn from `mallardduck/blade-lucide-icons` (owner's approval). Reference data picks from `App\Support\LucideIcons`, and every name there is a real Lucide icon (checked against the package's 2,416).
 92. **Filament's notification bell reads `notifications.data` as JSON**, and Laravel's table stored it as text; a migration makes it `jsonb`.
 93. **The users list** shows numbers masked; the full number appears only on demand, for roles allowed it, and the log records each time.
     - Search: a number typed any way finds its account through the unique index; otherwise the search is by email (exact) or part of the name. The name search scans the table, which is fine at this size; a trigram index can come when it is not. Search terms are not split, so `0101 234 5678` is one number.
     - "Joined" sorts by `id` (UUID v7, DECISIONS 53). Status has a new index for its filter; the other filters ask indexed foreign keys.
 94. **The dashboard** has the three widgets whose data exists: the review queue, listings published by kind, and new users with the share that confirmed a phone.
-    - The period is today (from midnight in Cairo), the last 7 days or the last 30.
-    - The review queue is the whole queue, whatever the period: a queue filtered by date would hide its oldest items, which are the ones that matter.
+    - The period is today (from midnight in Cairo), the last 7 days or the last 30: rolling windows, so a period compares with one of the same length (approved by the owner).
+    - The review queue is the whole queue, whatever the period: a queue filtered by date would hide its oldest items, which are the ones that matter (approved by the owner).
 95. **Only two panel middleware are persistent** (re-run on Livewire's own requests): `SetAdminLocale` and `AuthenticateAdmin`; Filament makes its own persistent. Making the whole list persistent ran `StartSession` and `EncryptCookies` a second time inside every Livewire request. That replaced the session and signed the admin out on the next request: the real run found it when the notification bell lazy-loaded. A test pins the persistent list.
+96. **Readex Pro is self-hosted** (owner's decision): no font CDN at run time.
+    - Laravel's Vite plugin downloads it at build time (Bunny's files, weights 300 to 700, the Arabic and Latin subsets, each with its unicode range) into `public/build`.
+    - The panel uses Filament's local font provider and prints the build's font faces in its head (`Vite::fonts('readex-pro')`).
+    - The build needs the network; a page never does. A test checks the sign-in page names no font host and loads the build's files.
+97. **Western digits (0-9) everywhere in the admin panel**, numbers, money and dates included, with the text in Arabic (owner's decision; the mobile app's choice stays open, OPEN_QUESTIONS 7).
+    - For Arabic the number locale is ICU's `ar-u-nu-latn`, Arabic with the Latin numbering system: `1,234,567.5` and `42,500.00 ج.م.`. English stays `en`.
+    - It is set in one place (`App\Support\AdminNumbers`): `SetAdminLocale` gives it to Laravel's `Number`, and the panel provider gives it to Filament's tables and schemas, read per request, since each admin has their own language.
+    - Carbon already writes Western digits in Arabic dates (`25 نوفمبر 2026`).
+    - Tests render the panel's pages in Arabic and find no Arabic-Indic digit.
