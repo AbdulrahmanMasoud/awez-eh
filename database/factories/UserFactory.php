@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Domains\Identity\Actions\SyncAdminRoles;
+use App\Domains\Identity\Enums\AdminRole;
 use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Identity\Models\User;
 use App\Support\PhoneNumber;
@@ -18,6 +20,11 @@ use Illuminate\Support\Facades\Date;
  */
 final class UserFactory extends Factory
 {
+    public const string ADMIN_PASSWORD = 'correct-horse-battery';
+
+    /** A base32 secret, as an authenticator app holds it. */
+    public const string AUTHENTICATOR_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+
     #[\Override]
     protected $model = User::class;
 
@@ -63,6 +70,31 @@ final class UserFactory extends Factory
             'phone' => PhoneNumber::from($phone ?? '010'.fake()->unique()->numerify('########')),
             'phone_verified_at' => Date::now(),
         ]);
+    }
+
+    /**
+     * An admin with these roles, a password, and an authenticator app set up (two-factor
+     * authentication is required in the panel). Without roles, a super_admin.
+     */
+    public function admin(AdminRole ...$roles): static
+    {
+        return $this
+            ->state(fn (array $attributes): array => [
+                'password' => self::ADMIN_PASSWORD,
+                'app_authentication_secret' => self::AUTHENTICATOR_SECRET,
+            ])
+            ->afterCreating(function (User $user) use ($roles): void {
+                app(SyncAdminRoles::class)->handle();
+                $user->assignRole(array_map(fn (AdminRole $role): string => $role->value, $roles === [] ? [AdminRole::SuperAdmin] : $roles));
+            });
+    }
+
+    /**
+     * An admin who has not set up an authenticator app yet.
+     */
+    public function withoutTwoFactor(): static
+    {
+        return $this->state(fn (array $attributes): array => ['app_authentication_secret' => null]);
     }
 
     public function suspended(): static

@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Domains\CityGuide\Enums\GuideCategory;
 use App\Domains\Geography\Models\City;
+use App\Domains\Identity\Actions\SyncAdminRoles;
 use App\Domains\Places\Models\PlaceCategory;
 use App\Domains\Services\Models\Trade;
 use Database\Factories\Support\SadatCity;
@@ -88,8 +89,12 @@ final class ReferenceDataSeeder extends Seeder
         ['طوارئ المياه', '125'],
     ];
 
-    public function run(): void
+    public function run(SyncAdminRoles $syncAdminRoles): void
     {
+        // The admin roles and their permissions, everywhere: admins themselves come only from
+        // `awez:create-admin` (and the demo seeder's one, in local and testing).
+        $syncAdminRoles->handle();
+
         $city = City::query()->updateOrCreate(
             ['slug' => 'sadat-city'],
             ['name_ar' => 'مدينة السادات', 'name_en' => 'Sadat City', 'center' => SadatCity::centre(), 'is_active' => true],

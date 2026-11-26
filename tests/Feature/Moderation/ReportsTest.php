@@ -6,16 +6,20 @@ use App\Domains\Bookings\Models\Booking;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
 use App\Domains\Geography\Models\City;
+use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Moderation\Enums\ReportStatus;
 use App\Domains\Moderation\Models\Report;
+use App\Domains\Places\Models\OpeningHour;
 use App\Domains\Places\Models\Place;
+use App\Domains\Places\Models\PlaceCategory;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
+use App\Domains\Services\Models\Trade;
 use Illuminate\Database\ClassMorphViolationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -36,6 +40,10 @@ it('enforces a morph map with short names', function (): void {
             'message' => Message::class,
             'booking' => Booking::class,
             'review' => Review::class,
+            'city' => City::class,
+            'district' => District::class,
+            'trade' => Trade::class,
+            'place_category' => PlaceCategory::class,
         ]);
 });
 
@@ -60,7 +68,7 @@ it('stores what a report points at by its short name and finds it back', functio
 ]);
 
 it('refuses to point at a model the morph map does not name', function (): void {
-    expect(fn (): Report => Report::factory()->for(City::factory()->create(), 'reportable')->make())
+    expect(fn (): Report => Report::factory()->for(OpeningHour::factory()->create(), 'reportable')->make())
         ->toThrow(ClassMorphViolationException::class);
 });
 

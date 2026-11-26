@@ -14,8 +14,10 @@ use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
 use App\Domains\Favorites\Models\Favorite;
 use App\Domains\Geography\Models\District;
+use App\Domains\Identity\Enums\AdminRole;
 use App\Domains\Identity\Enums\UserLocale;
 use App\Domains\Identity\Enums\UserStatus;
+use App\Domains\Identity\Policies\UserPolicy;
 use App\Domains\Marketplace\Models\UsedItem;
 use App\Domains\Moderation\Models\Report;
 use App\Domains\Places\Models\Place;
@@ -26,11 +28,19 @@ use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Reviews\Models\Review;
 use App\Domains\Services\Models\Provider;
+use App\Support\AdminArea;
 use App\Support\Casts\PhoneNumberCast;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * Every user is a resident; an advertiser or a provider is one by what they own, not by a role
@@ -48,7 +59,8 @@ use Laravel\Sanctum\HasApiTokens;
 #[Fillable(['name', 'locale', 'district_id'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-final class User extends Authenticatable
+#[UsePolicy(UserPolicy::class)]
+final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
     use HasApiTokens;
 
@@ -56,7 +68,10 @@ final class User extends Authenticatable
     use HasFactory;
 
     // Primary keys are UUID v7: HasUuids generates them time-ordered, so new rows append to the index.
+    use HasRoles;
     use HasUuids;
+    use InteractsWithAppAuthentication;
+    use InteractsWithAppAuthenticationRecovery;
     use Notifiable;
 
     /**
@@ -73,6 +88,32 @@ final class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === UserStatus::Active;
+    }
+
+    /**
+     * Holds at least one admin role. Residents hold none.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(array_column(AdminRole::cases(), 'value'));
+    }
+
+    /**
+     * Admins with a password and an active account enter the panel; Filament then requires
+     * their two-factor authentication. Everyone else gets 403.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'admin' && $this->isActive() && $this->password !== null && $this->isAdmin();
+    }
+
+    /**
+     * An admin permission, which counts only inside the admin panel: through the API an admin is
+     * a resident like any other (DECISIONS 86). Policies ask this beside their resident rules.
+     */
+    public function mayAdminister(string $permission): bool
+    {
+        return AdminArea::isActive() && $this->isActive() && $this->checkPermissionTo($permission);
     }
 
     public function needsPhone(): bool

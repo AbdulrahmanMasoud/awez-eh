@@ -9,6 +9,7 @@ use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
 use App\Domains\Favorites\Models\Favorite;
 use App\Domains\Geography\Models\District;
+use App\Domains\Identity\Enums\AdminRole;
 use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Identity\Models\DeviceToken;
 use App\Domains\Identity\Models\PhoneVerification;
@@ -244,4 +245,23 @@ it('does it all or nothing', function (): void {
     expect($this->user->fresh())->status->toBe(UserStatus::Active)->name->toBe('أحمد السيد')
         ->and($brokered->fresh()?->status)->toBe(ContentStatus::Published)
         ->and(PersonalAccessToken::query()->count())->toBe(1);
+});
+
+it('takes an admin\'s roles and authenticator away with the account', function (): void {
+    $admin = User::factory()->admin(AdminRole::Moderator)->create();
+    $token = $admin->createToken('Pixel 8')->plainTextToken;
+
+    deleteAccount($token)->assertNoContent();
+
+    expect($admin->fresh())->app_authentication_secret->toBeNull()->password->toBeNull()
+        ->and($admin->fresh()?->getRoleNames()->all())->toBe([]);
+});
+
+it('refuses to delete the last super admin\'s account', function (): void {
+    $admin = User::factory()->admin()->create();
+    $token = $admin->createToken('Pixel 8')->plainTextToken;
+
+    deleteAccount($token)->assertStatus(409)->assertJsonPath('code', 'last_super_admin');
+
+    expect($admin->fresh()?->status)->toBe(UserStatus::Active);
 });

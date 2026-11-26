@@ -92,7 +92,8 @@ it('declares a relationship on both sides of every foreign key', function (): vo
         select c.conrelid::regclass::text as table_name, a.attname as column_name, c.confrelid::regclass::text as references_table
         from pg_constraint c join pg_attribute a on a.attrelid = c.conrelid and a.attnum = c.conkey[1]
         where c.contype = 'f' and c.connamespace = 'public'::regnamespace
-          and c.conrelid::regclass::text <> 'sessions'
+          -- Framework and package tables whose models are not ours: sessions, and spatie/laravel-permission's.
+          and c.conrelid::regclass::text not in ('sessions', 'model_has_permissions', 'model_has_roles', 'role_has_permissions')
         order by 1, 2
         SQL);
 

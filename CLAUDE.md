@@ -22,6 +22,7 @@ sail composer test          # pest unit + feature + arch, parallel
 sail composer test:mutate   # mutation testing of money, commissions and the booking state machine (score 100), run when they change
 sail composer fmt           # pint + rector (writes)
 sail composer docs          # API docs (Scribe) at http://localhost:8020/docs, in local only
+sail npm ci && sail npm run build   # the admin panel's theme and its font (public/build); some tests read it
 sail artisan migrate:fresh --seed
 ```
 
@@ -106,7 +107,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 **Errors.** Domain errors extend `App\Exceptions\DomainException` (error code, translation key, HTTP status) and live in the domain's `Exceptions/`. Rendering is mapped once in `bootstrap/app.php`.
 
-**Admin panel (Filament).** Every resource is authorized by a Policy and an admin role (`spatie/laravel-permission` with Filament Shield). Moderation, verification and commission screens record who did what (`spatie/laravel-activitylog`).
+**Admin panel (Filament).** Every resource is authorized by a Policy and an admin role (`spatie/laravel-permission` with Filament Shield): policies ask `$user->mayAdminister('Affix:Subject')` beside their resident rules, which counts only inside the panel (DECISIONS 86). Every admin action writes an entry in the activity log (`spatie/laravel-activitylog`, log `admin`) with the admin, the reason and before and after, through the Action that does it or `LogsAdminChanges`; never personal data. Admins exist only through `awez:create-admin`.
 
 **Localization.** Every user-facing string is translated with `__()` (`lang/ar`, `lang/en`); Arabic is the default locale and the admin panel is RTL. The API returns messages in the locale of `Accept-Language`.
 

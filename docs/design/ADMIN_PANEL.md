@@ -27,7 +27,7 @@ The owner approved this design on 2026-11-24. Every admin step follows it. A cha
 | Info | `#3A4A8C` on `#E9ECF6` | marketplace items, the "viewing" stage |
 
 - Filament color map: `primary` from the green, `warning` from the yellow, `danger` from the orange, `gray` tinted toward the ink, `info` from the blue.
-- Font: Readex Pro (Google Fonts, weights 300–700) through `->font('Readex Pro')`.
+- Font: Readex Pro (weights 300–700, Arabic and Latin), self-hosted: downloaded at build time into the theme build and served from `public/build`, never from a font CDN (owner's decision, DECISIONS 96).
 - Radii: cards 16px, buttons and inputs 10–12px, badges 6px, pills 999px.
 - Icons: one stroke icon set (Heroicons outline, Filament's default), 18px in the sidebar. No emoji anywhere.
 - Status badges are tinted pills: negotiation yellow, closed green, viewing blue, new lead gray, reported orange.
@@ -63,6 +63,6 @@ Each widget lands with the step that builds its domain; until then it is left ou
 ## Rules that come with it
 
 - Phone numbers are masked everywhere in the panel (`PhoneNumber` string form). The full number appears only on the record's own page, for roles allowed to see it.
-- Money shows as `٤٢٬٥٠٠ ج.م` style through the Money cast and the active locale. One digit style across the panel, chosen by the owner (open question; until then Filament's locale formatting).
+- Western digits (0-9) everywhere in the panel, numbers, money and dates included, while the text stays Arabic (owner's decision, DECISIONS 97): money shows as `42,500.00 ج.م.`, through the Money cast and the panel's number locale (`ar-u-nu-latn`, Arabic with Latin digits).
 - Approving and rejecting go through the moderation Actions and are recorded in the activity log.
 - Touch targets are at least 44px; every icon-only button has an `aria-label`; text meets 4.5:1 contrast.

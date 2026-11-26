@@ -179,6 +179,8 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         // Checked at the end of the statement: a conversation deleted with its resident takes its messages,
         // but a sender's messages in someone else's conversation keep the sender's account.
         'messages.sender_id' => 'no action',
+        'model_has_permissions.permission_id' => 'cascade',
+        'model_has_roles.role_id' => 'cascade',
         'news_items.city_id' => 'restrict',
         'news_items.created_by' => 'set null',
         'opening_hours.place_id' => 'cascade',
@@ -218,6 +220,8 @@ it('gives every foreign key the delete rule its data needs', function (): void {
         'reviews.booking_id' => 'restrict',
         'reviews.hidden_by' => 'set null',
         'reviews.reviewer_id' => 'cascade',
+        'role_has_permissions.permission_id' => 'cascade',
+        'role_has_permissions.role_id' => 'cascade',
         'search_alerts.district_id' => 'restrict',
         'search_alerts.user_id' => 'cascade',
         'sessions.user_id' => 'cascade',

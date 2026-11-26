@@ -8,6 +8,7 @@ use App\Domains\Alerts\Actions\DeleteAccountSearchAlerts;
 use App\Domains\Favorites\Actions\DeleteAccountFavorites;
 use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Identity\Models\User;
+use App\Domains\Identity\Support\SuperAdmins;
 use App\Domains\Marketplace\Actions\RemoveAccountUsedItems;
 use App\Domains\Moderation\Actions\WithdrawAccountReports;
 use App\Domains\Places\Actions\ReleaseAccountPlaces;
@@ -34,17 +35,22 @@ final readonly class DeleteAccount
         private DeleteAccountFavorites $favorites,
         private DeleteAccountSearchAlerts $searchAlerts,
         private WithdrawAccountReports $reports,
+        private SuperAdmins $superAdmins,
         private Config $config,
     ) {}
 
     public function handle(User $user): void
     {
         DB::transaction(function () use ($user): void {
+            $this->superAdmins->ensureAnotherRemainsWithout($user);
+
             // Device tokens go with the access tokens too; deleted here so nothing depends on that.
             $user->deviceTokens()->delete();
             $user->tokens()->delete();
             $user->socialAccounts()->delete();
             $user->phoneVerifications()->delete();
+            // An admin account stops being one: no role, no authenticator.
+            $user->syncRoles([]);
 
             $this->properties->handle($user);
             $this->provider->handle($user);
@@ -67,6 +73,8 @@ final readonly class DeleteAccount
             'email' => null,
             'email_verified_at' => null,
             'password' => null,
+            'app_authentication_secret' => null,
+            'app_authentication_recovery_codes' => null,
             'remember_token' => null,
             'phone' => null,
             'phone_verified_at' => null,

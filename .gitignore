@@ -5,8 +5,11 @@
 /node_modules
 /vendor
 /public/build
+/public/css/filament
 /public/fonts-manifest.dev.json
+/public/fonts/filament
 /public/hot
+/public/js/filament
 /public/storage
 
 # Environment and keys

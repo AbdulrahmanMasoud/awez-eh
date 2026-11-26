@@ -13,13 +13,16 @@ use App\Domains\Identity\Drivers\JsonWebKeys;
 use App\Domains\Identity\Drivers\LogPhoneVerifier;
 use App\Domains\Identity\Drivers\PhoneCodeIssuer;
 use App\Domains\Identity\Enums\PhoneVerificationDriver;
+use App\Domains\Identity\Policies\RolePolicy;
 use App\Domains\Identity\Support\PhoneCodeHasher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Log\LogManager;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
+use Spatie\Permission\Models\Role;
 
 /**
  * Sign-in and phone confirmation (ADR 0003): the drivers, built from config/awez.php, and the
@@ -84,6 +87,9 @@ final class IdentityServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Spatie's Role is not ours, so its policy is registered by hand (Shield's roles screen).
+        Gate::policy(Role::class, RolePolicy::class);
+
         if (! $this->app->runningInConsole()) {
             $this->refuseDevelopmentDrivers();
         }

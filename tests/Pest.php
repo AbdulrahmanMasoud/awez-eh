@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Domains\Identity\Enums\AdminRole;
+use App\Domains\Identity\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -53,4 +56,18 @@ function modelClasses(): array
     sort($models);
 
     return $models;
+}
+
+/**
+ * Signs in to the admin panel as an admin with these roles (a super_admin without roles) and
+ * makes the panel the current one, as the panel's own middleware does for every request.
+ */
+function actingAsAdmin(AdminRole ...$roles): User
+{
+    $admin = User::factory()->admin(...$roles)->create();
+
+    test()->actingAs($admin);
+    Filament::setCurrentPanel('admin');
+
+    return $admin;
 }
