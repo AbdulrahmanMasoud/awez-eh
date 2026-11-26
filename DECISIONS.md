@@ -318,3 +318,43 @@ Decisions taken while executing `docs/BUILD_PLAN.md`: what was chosen and why, s
     - The first group is `MediaSettings` (إعدادات الصور under النظام): the file size (10 MB), uploads per hour (60), and the count of each collection that holds more than one file. A collection of one (an avatar, a logo) is one by nature, not a setting. Collections and their limits are declared on each model (`InteractsWithMediaCollections`), and `media` and the new owners are in the morph map.
 105. **Deleting an account** deletes its uploaded picture and its pending uploads, with their files (`DeleteAccountMedia`). Listings' photos go with the listings: Medialibrary deletes a model's media when the model is deleted; an archived listing keeps them.
 106. **Sales opens agreements' documents by default** (owner's decision): the seeded `sales` role holds `ViewDocuments:PropertyAgreement`, since sales brings the deals the agreements cover. Each URL is still signed for 5 minutes and logged. Seeding adds it to an existing `sales` role and takes nothing away; a super admin can still remove it on the roles screen.
+
+## Step 2.2 (task 008)
+
+107. **The public list** (`GET /api/v1/properties`) reads published rows only, 20 a page by cursor.
+    - Every filter and sort has an index, partial on published rows (`id`; `price, id`; `area_m2`; `bedrooms`; `finishing`; `furnished`; `brokered`), beside the existing `purpose, type`, `district_id` and the GiST `location`. With 16,824 published rows, newest and both price sorts read 21 rows from their index (under 1 ms); the report has the plans.
+    - Multiple values are arrays (`type[]=apartment&type[]=villa`). Prices are pounds with up to two decimals, read as `Money`. Booleans in the query string are `true`, `false`, `1` or `0`.
+    - "Near" is `lat` and `lng` with `radius_m` from 100 m to 20 km, 5 km when left out. `nearest` needs them and orders by the distance in whole metres, then the id. The distance is a column of a subquery, so the cursor compares it like any column. With 3,100 properties within 5 km it took 229 ms; PostGIS's index ordering (`<->`) is the next step if the city grows that dense.
+108. **Review (owner): editing a published property.** Changing only the price, or removing or reordering photos, keeps it public. Any other field, or a new photo, sends it back to `pending_review` and hides it until a moderator approves it again; it keeps its first publication date. A rent's period can change; its purpose cannot (a sale that becomes a rent is listed again). Sold, rented and archived properties are not edited (`not_editable`, 409). The owner is told nothing when an edit sends it back: their answer shows `pending_review`.
+109. **A public location is rounded to 3 decimals** (about 100 m), marked `exact: false`. The exact pin is someone's home: only its owner (through the API) and admins (in the panel) see it.
+110. **The content status machine** (`App\Domains\Moderation\Support\ContentStatusMachine`, pure, mutation score 100) is shared by properties now and craftsmen, places and used items next (ADR 0008).
+    - The owner submits (`draft → pending_review`), pauses (`published → paused`), resumes, marks sold or rented, and archives any status but sold, rented and archived. A moderator approves and rejects what waits (`pending_review`) and takes down what is public (`published → rejected`); rejecting and taking down need a reason.
+    - **Resume:** a paused property goes back to the public directly, unless its owner changed something that needs review while it was paused; then it goes to review first. A `changed_since_review` flag, on all four moderated tables, remembers it.
+    - **Resubmit:** a rejected property goes back to review only after an edit (any edit, the price included), so a refusal is never sent back unchanged. Its only other move is archive.
+    - **Sold or rented** follows the content's deal: a sale ends as sold, a rent as rented, a used item as sold, a craftsman or a place as neither.
+    - Each domain keeps its own Actions (`SubmitProperty`, `ApproveProperty`, ...), all through `ChangePropertyStatus`: a row lock, the machine, the columns of a review, an activity entry and an event after commit. A refused move answers `action_not_allowed` (409) with the actions allowed instead.
+111. **Brokered properties never lead to their owner** (invariant 2).
+    - Their advertiser is the platform: `{is_platform: true, name: "عاوز إيه"}`, with no id, picture, date or number of the owner.
+    - `POST /properties/{id}/contact` answers `contact_through_platform` (409); for other published properties it gives the owner's number and a `wa.me` link, 30 times an hour per account (`AWEZ_CONTACT_RATE_LIMIT_PER_HOUR`).
+    - No property response carries an advertiser's user id, brokered or not. A test walks every property endpoint and searches the JSON for a brokered owner's number (four forms), id, email and name; the real run did the same on demo data.
+112. **Residents' listings.**
+    - Listing needs a confirmed number (`phone_required`, 403): it is how others reach the owner.
+    - Limits (`RealEstateSettings`, on إعدادات العقارات): 10 listings that are not sold, rented or archived (drafts and rejected ones count), and 5 created in the last 24 hours (rolling, not since midnight).
+    - `brokered`, the status, the owner and the view count are never taken from a resident.
+    - On edit, `photos` is the whole ordered list (`ArrangeCollection`, Media): ids of photos it keeps and of uploads it adds. A photo left out is removed, its files deleted after the commit. Another listing's photo id is refused like someone else's upload (`upload_not_available`).
+    - Someone else's unpublished property answers 404 everywhere; a published one answers 403 to any change.
+113. **Views** count once a day (UTC date) per account, or per hashed IP address for guests, never the owner's own, without touching `updated_at`.
+114. **Status history:** moderators' moves go to the `admin` log, owners' to a new `content` log. Both are a property's history on its page (`ContentLog`). An edit that sends a property back to review is logged too (`edit`).
+115. **The owner's notification** (approved, rejected, taken down, with the reason) is a database notification written in the owner's language (`User::preferredLocale`). It is sent when the event fires, after the commit, not on a queue: it is one insert. Push comes with step 3.4, queued.
+116. **المراجعة** lists one tab per reviewable kind (`ReviewableKind`, registered in `ReviewKinds` by the panel provider), oldest first. Approve is one click; reject asks for a common reason (`RejectionReason`, written in the owner's language) or free text. The sidebar badge and the dashboard's محتاج قرارك count what the admin may review.
+    - Permissions: moderators review (`Approve`, `Reject:Property`, `View:ReviewQueue`).
+    - Sales lists brokered properties, records agreements and sees a brokered owner's number (`Create`, `MarkBrokered`, `RevealOwnerPhone:Property`, `ViewAny`, `View`, `Create:PropertyAgreement`).
+    - Super admins hold everything. In the panel a property's page needs `View:Property` whatever its status.
+117. **Brokered listings in the panel.**
+    - A sales admin creates one with its agreement. It is owned by the owner's account, or by the platform account (`awez:platform-account`, `AWEZ_PLATFORM_ACCOUNT_EMAIL`, an account with no way to sign in) when the owner has none. It waits for review like any listing (invariant 9).
+    - Recording an agreement on an existing property makes it brokered.
+    - Agreements are never edited or deleted: a change is a new agreement.
+    - A brokered property's "show number" shows its latest agreement's number; a resident's shows their account's.
+    - The log names the property, never the owner's name or number.
+    - Admins do not edit residents' text: a moderator who wants a change rejects with a reason.
+118. **Demo photos** are drawn with GD (a building, its windows and a sky, varied per property) and go through `AddImage` like real ones (`DemoPhotosSeeder`, three per property, skipped by the test suite with `AWEZ_DEMO_PHOTOS=false`). Masked numbers in the panel are written left to right (`dir="ltr"`): inside Arabic text `010*****678` read `678*****010`, on the users' screen too.

@@ -89,10 +89,10 @@ it('shows each role exactly its navigation', function (AdminRole $role, array $s
         expect($labels)->not->toContain($label);
     }
 })->with([
-    'super_admin' => [AdminRole::SuperAdmin, ['المستخدمين', 'الأدوار', 'سجل النشاط', 'المدن', 'المناطق', 'الحرف', 'أقسام الأماكن', 'النظام'], []],
-    'moderator' => [AdminRole::Moderator, ['المستخدمين'], ['الأدوار', 'سجل النشاط', 'المدن', 'الحرف', 'أقسام الأماكن']],
-    'data_entry' => [AdminRole::DataEntry, ['المدن', 'المناطق', 'الحرف', 'أقسام الأماكن'], ['المستخدمين', 'الأدوار', 'سجل النشاط']],
-    'sales' => [AdminRole::Sales, ['المستخدمين'], ['الأدوار', 'سجل النشاط', 'المدن', 'الحرف']],
+    'super_admin' => [AdminRole::SuperAdmin, ['المستخدمين', 'الأدوار', 'سجل النشاط', 'المدن', 'المناطق', 'الحرف', 'أقسام الأماكن', 'النظام', 'المراجعة', 'العقارات', 'إعدادات العقارات'], []],
+    'moderator' => [AdminRole::Moderator, ['المستخدمين', 'المراجعة', 'العقارات'], ['الأدوار', 'سجل النشاط', 'المدن', 'الحرف', 'أقسام الأماكن', 'إعدادات العقارات']],
+    'data_entry' => [AdminRole::DataEntry, ['المدن', 'المناطق', 'الحرف', 'أقسام الأماكن'], ['المستخدمين', 'الأدوار', 'سجل النشاط', 'المراجعة', 'العقارات']],
+    'sales' => [AdminRole::Sales, ['المستخدمين', 'العقارات'], ['الأدوار', 'سجل النشاط', 'المدن', 'الحرف', 'المراجعة', 'إعدادات العقارات']],
 ]);
 
 it('hides the groups that have nothing yet', function (): void {
@@ -100,8 +100,7 @@ it('hides the groups that have nothing yet', function (): void {
 
     $labels = sidebarLabels($this->get('/admin')->assertOk()->getContent());
 
-    expect($labels)->toContain('النظام')
-        ->not->toContain('المحتوى')
+    expect($labels)->toContain('النظام', 'المحتوى', 'العقارات', 'المراجعة')
         ->not->toContain('النشاط');
 });
 

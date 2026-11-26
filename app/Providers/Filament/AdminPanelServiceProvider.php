@@ -10,6 +10,8 @@ use App\Domains\Identity\Enums\UserLocale;
 use App\Domains\Identity\Models\User;
 use App\Filament\Navigation\AdminNavigationGroup;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Review\PropertyReviewKind;
+use App\Filament\Review\ReviewKinds;
 use App\Http\Middleware\Admin\AuthenticateAdmin;
 use App\Http\Middleware\Admin\SetAdminLocale;
 use App\Support\AdminArea;
@@ -51,6 +53,11 @@ final class AdminPanelServiceProvider extends PanelProvider
     public function register(): void
     {
         parent::register();
+
+        // What المراجعة reviews, in its tabs' order. Steps 2.3 to 2.5 add their kinds here.
+        $this->app->singleton(ReviewKinds::class, fn (): ReviewKinds => new ReviewKinds([
+            new PropertyReviewKind,
+        ]));
 
         // Admin permissions count only inside this panel (DECISIONS 86).
         AdminArea::detectUsing(static fn (): bool => Filament::getCurrentPanel()?->getId() === self::ID);

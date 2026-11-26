@@ -34,9 +34,13 @@ it('seeds the four roles with their permissions, again and again', function (): 
         ->and(Permission::query()->count())->toBe(count(AdminPermissions::all()))
         ->and(Role::findByName('super_admin')->permissions()->count())->toBe(count(AdminPermissions::all()))
         ->and(Role::findByName('moderator')->permissions()->pluck('name')->sort()->values()->all())
-        ->toBe(['Reactivate:User', 'RevealPhone:User', 'Suspend:User', 'View:User', 'ViewAny:User'])
+        ->toBe(['Approve:Property', 'Reactivate:User', 'Reject:Property', 'RevealPhone:User', 'Suspend:User', 'View:Property', 'View:ReviewQueue', 'View:User', 'ViewAny:Property', 'ViewAny:User'])
         ->and(Role::findByName('sales')->permissions()->pluck('name')->sort()->values()->all())
-        ->toBe(['View:User', 'ViewAny:User', 'ViewDocuments:PropertyAgreement']);
+        ->toBe([
+            'Create:Property', 'Create:PropertyAgreement', 'MarkBrokered:Property', 'RevealOwnerPhone:Property',
+            'View:Property', 'View:PropertyAgreement', 'View:User', 'ViewAny:Property', 'ViewAny:PropertyAgreement',
+            'ViewAny:User', 'ViewDocuments:PropertyAgreement',
+        ]);
 });
 
 it('keeps what a super admin added to a role when the roles are seeded again', function (): void {

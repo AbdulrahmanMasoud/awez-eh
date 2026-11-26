@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Media\Settings\MediaSettings;
+use App\Domains\RealEstate\Settings\RealEstateSettings;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelSettings\SettingsCasts\DataCast;
 use Spatie\LaravelSettings\SettingsCasts\DateTimeInterfaceCast;
@@ -18,6 +19,7 @@ return [
 
     'settings' => [
         MediaSettings::class,
+        RealEstateSettings::class,
     ],
 
     'setting_class_path' => app_path('Domains'),

@@ -3,8 +3,10 @@
 declare(strict_types=1);
 use App\Domains\Identity\Models\User;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\Properties\PropertyResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Filament\Widgets\OverviewStats;
+use App\Filament\Widgets\PendingReview;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -192,6 +194,7 @@ return [
         'manage' => [
             RoleResource::class => ['viewAny', 'view', 'create', 'update', 'delete'],
             UserResource::class => ['viewAny', 'view', 'suspend', 'reactivate', 'updateRoles', 'revealPhone'],
+            PropertyResource::class => ['viewAny', 'view', 'create', 'approve', 'reject', 'markBrokered', 'revealOwnerPhone'],
         ],
         'exclude' => [
             //
@@ -234,8 +237,9 @@ return [
         'exclude' => [
             AccountWidget::class,
             FilamentInfoWidget::class,
-            // The dashboard's widgets are for every admin.
+            // The dashboard's widgets are for every admin; PendingReview shows to those who review.
             OverviewStats::class,
+            PendingReview::class,
         ],
     ],
 
@@ -256,6 +260,10 @@ return [
     // Permissions no resource or page carries yet (App\Domains\Identity\Support\AdminPermissions).
     'custom_permissions' => [
         'ViewDocuments:PropertyAgreement' => 'View the documents of brokerage agreements',
+        // Agreements are a relation manager on a property's page, not a resource of their own.
+        'ViewAny:PropertyAgreement' => 'List the brokerage agreements of a property',
+        'View:PropertyAgreement' => 'Open a brokerage agreement',
+        'Create:PropertyAgreement' => 'Record a brokerage agreement (the property becomes brokered)',
     ],
 
     /*

@@ -24,6 +24,27 @@ return [
             'per_user_per_minute' => (int) env('AWEZ_API_RATE_LIMIT_PER_USER', 60),
             'per_ip_per_minute' => (int) env('AWEZ_API_RATE_LIMIT_PER_IP', 300),
         ],
+        // Asking a property owner's number (POST /api/v1/properties/{id}/contact).
+        'contact' => [
+            'per_user_per_hour' => (int) env('AWEZ_CONTACT_RATE_LIMIT_PER_HOUR', 30),
+        ],
+    ],
+
+    /*
+    | Demo content (local and testing only, DemoContentSeeder). Photos go through the real
+    | cleaning and conversion path, which takes a while, so the test suite leaves them out.
+    */
+    'demo' => [
+        'photos' => (bool) env('AWEZ_DEMO_PHOTOS', true),
+    ],
+
+    /*
+    | The account that owns brokered properties whose owners have no account of their own
+    | (`awez:platform-account` creates it once). Nobody signs in with it: it has no password, no
+    | Google or Apple account and no phone.
+    */
+    'platform_account' => [
+        'email' => env('AWEZ_PLATFORM_ACCOUNT_EMAIL', 'platform@awezeh.com'),
     ],
 
     /*

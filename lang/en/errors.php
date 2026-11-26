@@ -23,4 +23,13 @@ return [
     'image_too_large' => 'This photo is too large. Make it smaller and try again.',
     'upload_not_available' => 'One of the photos is missing or has expired. Upload it again.',
     'too_many_files' => 'This already has as many photos as it can hold.',
+    'action_not_allowed' => 'You cannot do that now. See the actions allowed.',
+    'reason_required' => 'Write the reason, so the owner knows what to change.',
+    'not_editable' => 'This listing is closed (sold, rented or archived) and cannot be edited.',
+    'contact_through_platform' => 'This property is brokered by the platform: message us or book a viewing.',
+    'contact_unavailable' => 'The owner cannot be reached by phone right now.',
+    'too_many_active_listings' => 'You have reached the most listings you can have open. Archive an old one first.',
+    'too_many_new_listings' => 'You have reached the most new listings for today. Try again tomorrow.',
+    'phone_required' => 'Confirm your phone number first, so people can reach you.',
+    'platform_account_missing' => 'The platform account does not exist yet. Run awez:platform-account first.',
 ];
