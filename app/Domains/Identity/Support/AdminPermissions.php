@@ -36,8 +36,8 @@ final class AdminPermissions
     /** المراجعة: the queue of everything waiting for review. */
     public const string REVIEW_QUEUE = 'View:ReviewQueue';
 
-    /** إعدادات العقارات: the limits on residents' listings (RealEstateSettings). */
-    public const string REAL_ESTATE_SETTINGS = 'View:RealEstateSettings';
+    /** إعدادات العقارات: the limits on residents' listings (RealEstateSettings, page PropertySettings). */
+    public const string REAL_ESTATE_SETTINGS = 'View:PropertySettings';
 
     public const string ACTIVITY_LOG = 'View:ActivityLog';
 

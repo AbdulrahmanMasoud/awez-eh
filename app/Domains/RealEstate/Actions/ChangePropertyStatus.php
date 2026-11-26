@@ -7,7 +7,6 @@ namespace App\Domains\RealEstate\Actions;
 use App\Domains\Identity\Models\User;
 use App\Domains\Moderation\Enums\ContentAction;
 use App\Domains\Moderation\Enums\ContentActor;
-use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Exceptions\ActionNotAllowed;
 use App\Domains\Moderation\Exceptions\ReasonRequired;
 use App\Domains\Moderation\Support\ContentLog;

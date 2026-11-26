@@ -8,6 +8,7 @@ use App\Domains\RealEstate\Enums\PropertyPurpose;
 use App\Domains\RealEstate\Models\Property;
 use App\Domains\RealEstate\Models\PropertyAgreement;
 use App\Support\PhoneNumber;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 
@@ -90,7 +91,7 @@ it('never shows a brokered owner\'s number, id, email or name on any property en
         ->and($responses['list sorted by distance']->json('data.0.id'))->toBe($brokered->id);
 
     foreach ($responses as $name => $response) {
-        /** @var TestResponse<\Illuminate\Http\JsonResponse> $response */
+        /** @var TestResponse<JsonResponse> $response */
         $json = (string) $response->getContent();
 
         foreach ($traces as $trace) {

@@ -7,6 +7,7 @@ namespace App\Domains\RealEstate\Policies;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Support\AdminPermissions;
 use App\Domains\RealEstate\Models\Property;
+use App\Support\AdminArea;
 use Illuminate\Auth\Access\Response;
 
 /**
@@ -21,14 +22,16 @@ final class PropertyPolicy
     }
 
     /**
-     * Published listings are public; owners see their own in any status. Anything else answers
-     * as missing: a draft's id says nothing.
+     * In the panel, the admins whose role may. Through the API, published listings are public and
+     * owners see their own in any status; anything else answers as missing: a draft's id says nothing.
      */
     public function view(?User $user, Property $property): Response
     {
-        return $property->status->isPublic()
-            || $property->isOwnedBy($user)
-            || $user?->mayAdminister(AdminPermissions::for('View', 'Property')) === true
+        if (AdminArea::isActive()) {
+            return $user?->mayAdminister(AdminPermissions::for('View', 'Property')) === true ? Response::allow() : Response::deny();
+        }
+
+        return $property->status->isPublic() || $property->isOwnedBy($user)
             ? Response::allow()
             : Response::denyAsNotFound();
     }

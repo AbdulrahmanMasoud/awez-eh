@@ -31,4 +31,5 @@ return [
     'too_many_active_listings' => 'وصلت لأقصى عدد إعلانات شغالة. أرشف إعلان قديم الأول.',
     'too_many_new_listings' => 'وصلت لأقصى عدد إعلانات جديدة النهارده. جرّب بكرة.',
     'phone_required' => 'أكّد رقم موبايلك الأول عشان الناس تقدر توصلك.',
+    'platform_account_missing' => 'حساب المنصة مش موجود. شغّل awez:platform-account الأول.',
 ];

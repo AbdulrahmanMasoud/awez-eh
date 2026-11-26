@@ -8,8 +8,6 @@ use App\Domains\RealEstate\Actions\CreateProperty;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\RealEstate\StorePropertyRequest;
 use App\Http\Resources\V1\RealEstate\OwnPropertyResource;
-use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group Real estate
@@ -32,10 +30,9 @@ final class StorePropertyController extends Controller
      * @response 422 scenario="upload_not_available" {"message": "صورة من الصور مش موجودة أو انتهت مدتها. ارفعها تاني.", "code": "upload_not_available", "errors": {}}
      * @response 422 scenario="too_many_files" {"message": "وصلت لأقصى عدد صور هنا.", "code": "too_many_files", "errors": {"limit": 20}}
      */
-    public function __invoke(StorePropertyRequest $request, CreateProperty $createProperty): JsonResponse
+    public function __invoke(StorePropertyRequest $request, CreateProperty $createProperty): OwnPropertyResource
     {
-        return new OwnPropertyResource($createProperty->handle($request->account(), $request->toData()))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        // A model created in this request answers 201 by itself.
+        return new OwnPropertyResource($createProperty->handle($request->account(), $request->toData()));
     }
 }

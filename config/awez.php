@@ -31,6 +31,15 @@ return [
     ],
 
     /*
+    | The account that owns brokered properties whose owners have no account of their own
+    | (`awez:platform-account` creates it once). Nobody signs in with it: it has no password, no
+    | Google or Apple account and no phone.
+    */
+    'platform_account' => [
+        'email' => env('AWEZ_PLATFORM_ACCOUNT_EMAIL', 'platform@awezeh.com'),
+    ],
+
+    /*
     | pg_trgm similarity from which a normalized search term matches a normalized text.
     | Below pg_trgm's own default (0.3): two swapped letters in a short word score 0.27, and
     | unrelated words score under 0.1 (DECISIONS.md, tests/Feature/Support/TrigramThresholdTest.php).

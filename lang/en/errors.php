@@ -31,4 +31,5 @@ return [
     'too_many_active_listings' => 'You have reached the most listings you can have open. Archive an old one first.',
     'too_many_new_listings' => 'You have reached the most new listings for today. Try again tomorrow.',
     'phone_required' => 'Confirm your phone number first, so people can reach you.',
+    'platform_account_missing' => 'The platform account does not exist yet. Run awez:platform-account first.',
 ];
