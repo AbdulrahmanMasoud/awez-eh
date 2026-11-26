@@ -31,6 +31,7 @@ final class AdminPermissions
     /**
      * Opening the scanned documents of brokerage agreements (signed URLs, each one logged). A
      * custom permission in Shield's config until the agreements' own screen comes (step 2.2).
+     * Sales holds it by default: they bring the deals the agreements cover (DECISIONS 106).
      */
     public const string AGREEMENT_DOCUMENTS = 'ViewDocuments:PropertyAgreement';
 
@@ -61,7 +62,7 @@ final class AdminPermissions
             AdminRole::SuperAdmin => self::all(),
             AdminRole::Moderator => self::of('User', ['ViewAny', 'View', 'Suspend', 'Reactivate', 'RevealPhone']),
             AdminRole::DataEntry => self::referenceData(),
-            AdminRole::Sales => self::of('User', ['ViewAny', 'View']),
+            AdminRole::Sales => [...self::of('User', ['ViewAny', 'View']), self::AGREEMENT_DOCUMENTS],
         };
     }
 

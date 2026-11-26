@@ -112,9 +112,19 @@ it('opens a document from the panel in a new tab, logging only the click', funct
         ->and(json_encode($component->effects['xjs'] ?? []))->toContain('signature');
 });
 
+it('lets sales open agreements\' documents by default', function (): void {
+    $media = agreementDocument();
+    $sales = actingAsAdmin(AdminRole::Sales);
+
+    $this->get(app(SignPrivateMediaUrl::class)->handle($sales, $media))->assertOk();
+
+    Livewire::test(PrivateDocumentHarness::class, ['media' => $media])
+        ->assertActionVisible(OpenPrivateMediaAction::NAME);
+});
+
 it('hides the action from an admin without the permission', function (): void {
     $media = agreementDocument();
-    actingAsAdmin(AdminRole::Sales);
+    actingAsAdmin(AdminRole::DataEntry);
 
     Livewire::test(PrivateDocumentHarness::class, ['media' => $media])
         ->assertActionHidden(OpenPrivateMediaAction::NAME);

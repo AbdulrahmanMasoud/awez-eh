@@ -35,7 +35,8 @@ it('seeds the four roles with their permissions, again and again', function (): 
         ->and(Role::findByName('super_admin')->permissions()->count())->toBe(count(AdminPermissions::all()))
         ->and(Role::findByName('moderator')->permissions()->pluck('name')->sort()->values()->all())
         ->toBe(['Reactivate:User', 'RevealPhone:User', 'Suspend:User', 'View:User', 'ViewAny:User'])
-        ->and(Role::findByName('sales')->permissions()->pluck('name')->sort()->values()->all())->toBe(['View:User', 'ViewAny:User']);
+        ->and(Role::findByName('sales')->permissions()->pluck('name')->sort()->values()->all())
+        ->toBe(['View:User', 'ViewAny:User', 'ViewDocuments:PropertyAgreement']);
 });
 
 it('keeps what a super admin added to a role when the roles are seeded again', function (): void {

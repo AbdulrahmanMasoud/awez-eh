@@ -1,6 +1,6 @@
 # Report 007: Media
 
-- PR: #13 (https://github.com/AbdulrahmanMasoud/awez-eh/pull/13). CI: see the PR.
+- PR: #13 (https://github.com/AbdulrahmanMasoud/awez-eh/pull/13). CI: green (see the PR).
 - Branch: task/007-media. Commit: 2713333 (the last before this report).
 
 ## What changed
@@ -55,23 +55,18 @@
 
 ## Decisions for the owner
 
-1. **The originals of photos are kept private** (DECISIONS 99, ADR 0007).
+The owner answered the first three; they are done.
+
+1. **The originals of photos are kept private** (DECISIONS 99, ADR 0007). **Approved.**
     - The brief put photos on the public disk. In the real run, the original's address could be guessed from a size's address (`…/conversions/photo-thumb.webp` → `…/photo.jpg`), and it opened.
-    - Done meanwhile: originals go to the private disk; only the two sizes are public. The guessed address now answers 403.
-    - Costs:
-        - as done: two disks per photo, and R2 needs both buckets;
-        - the other way: the 2560 px original (clean, but full size) is reachable by anyone who edits a link.
-2. **HEIC is refused** (DECISIONS 100, OPEN_QUESTIONS 8).
-    - Our image library lists HEIC but has no decoder for it.
-    - Done meanwhile: the app must send JPEG, which Expo's picker and manipulator do in one line.
-    - Costs:
-        - as done: nothing on the server; the app converts;
-        - the other way: the production image gets libheif's HEVC plugin (step 4.4) and HEIC joins the accepted list.
-3. **Who opens agreements' documents** (DECISIONS 99).
-    - Done meanwhile: super admins only by default, through a new permission a super admin can give to sales on the roles screen.
-    - Costs:
-        - as done: sales asks a super admin until given the permission;
-        - the other way: seeding it for sales by default, a one-line change.
+    - Originals go to the private disk; only the two sizes are public. The guessed address answers 403. R2 needs both buckets.
+2. **HEIC is refused; the app sends JPEG** (DECISIONS 100, OPEN_QUESTIONS 8). **Approved.**
+    - Our image library lists HEIC but has no decoder for it. Expo's picker and manipulator convert in one line.
+    - Step 4.4 may still add libheif's HEVC plugin to the production image.
+3. **Sales opens agreements' documents** (DECISIONS 106). **Owner's answer: by default.**
+    - The seeded `sales` role holds `ViewDocuments:PropertyAgreement`, beside `super_admin`. Every URL is still signed for 5 minutes and logged.
+    - Tests: the seeded roles list it for sales; a sales admin gets a working signed URL and sees the panel's action; a data-entry admin does not.
+    - On a database already seeded, `db:seed --class=ReferenceDataSeeder` (or any re-seed of the roles) adds it; nothing is taken away.
 4. **Limits.** The brief's numbers are the defaults, plus a 120-megapixel cap that a 108 MP phone photo passes. All of them except the cap can be changed on إعدادات الصور.
 5. **Packages.** The owner approved four packages for this task: the brief's three and Filament's media plugin.
 
@@ -97,7 +92,7 @@ None now; R2 waits for step 4.4. When it comes, in this order:
 
 ## Verification
 
-**`sail composer check`:** Pint, Rector and Larastan (max, no baseline, no ignores) pass. Pest passes 1,147 tests with 3,211 assertions. `main` had 1,065; this task adds 82 (datasets counted):
+**`sail composer check`:** Pint, Rector and Larastan (max, no baseline, no ignores) pass. Pest passes 1,148 tests with 3,214 assertions. `main` had 1,065; this task adds 83 (datasets counted):
 
 - `Media/ImageUploadTest` (21):
     - each format stored as a clean JPEG with two WebP sizes;
