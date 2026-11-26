@@ -16,7 +16,7 @@ The owner and Claude (on claude.ai) plan the work here. Claude Code carries it o
 | 005 | [Sign-in (BUILD_PLAN 1.4)](005-sign-in.md)                                     | done   | #8  |
 | 006 | [Admin panel foundation (BUILD_PLAN 1.5)](006-admin-panel-foundation.md)       | done   | #11 |
 | 007 | [Media (BUILD_PLAN 2.1)](007-media.md)                                         | done   | #13 |
-| 008 | [Real estate (BUILD_PLAN 2.2)](008-real-estate.md)                             | in progress |     |
+| 008 | [Real estate (BUILD_PLAN 2.2)](008-real-estate.md)                             | review | #16 |
 
 The statuses are `planned` (no brief yet, do not start), `ready`, `in progress`, `review` (the PR is open and the report is written), `done` (merged) and `dropped`.
 
