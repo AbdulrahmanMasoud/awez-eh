@@ -15,9 +15,11 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Media\Concerns\InteractsWithMediaCollections;
 use App\Domains\Media\Contracts\HasMediaCollections;
 use App\Domains\Media\Settings\MediaSettings;
+use App\Domains\Moderation\Enums\ContentDeal;
 use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Concerns\Moderated;
 use App\Domains\Moderation\Models\Concerns\Reportable;
+use App\Domains\Moderation\Support\ContentState;
 use App\Domains\Promotions\Models\FeaturedPlacement;
 use App\Domains\RealEstate\Enums\Finishing;
 use App\Domains\RealEstate\Enums\PropertyPurpose;
@@ -57,6 +59,25 @@ final class Property extends Model implements HasMediaCollections
     use InteractsWithMediaCollections;
     use Moderated;
     use Reportable;
+
+    public const string PHOTOS = 'photos';
+
+    /**
+     * What the content status machine needs: a sale ends as sold, a rent as rented.
+     */
+    public function contentState(): ContentState
+    {
+        return new ContentState(
+            $this->status,
+            $this->purpose === PropertyPurpose::Sale ? ContentDeal::Sale : ContentDeal::Rent,
+            $this->changed_since_review,
+        );
+    }
+
+    public function isOwnedBy(?User $user): bool
+    {
+        return $user instanceof User && $this->user_id === $user->id;
+    }
 
     /**
      * @return HasMany<Lead, $this>
@@ -161,12 +182,12 @@ final class Property extends Model implements HasMediaCollections
 
     public function registerMediaCollections(): void
     {
-        $this->addImageCollection('photos');
+        $this->addImageCollection(self::PHOTOS);
     }
 
     protected function collectionLimits(MediaSettings $settings): array
     {
-        return ['photos' => $settings->property_photos];
+        return [self::PHOTOS => $settings->property_photos];
     }
 
     /**
@@ -189,6 +210,7 @@ final class Property extends Model implements HasMediaCollections
             'brokered' => 'boolean',
             'views_count' => 'integer',
             'status' => ContentStatus::class,
+            'changed_since_review' => 'boolean',
             'reviewed_at' => 'datetime',
             'published_at' => 'datetime',
         ];

@@ -41,6 +41,7 @@ use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -64,7 +65,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 #[UsePolicy(UserPolicy::class)]
-final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasMediaCollections
+final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference, HasMediaCollections
 {
     use HasApiTokens;
 
@@ -119,6 +120,14 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
     public function mayAdminister(string $permission): bool
     {
         return AdminArea::isActive() && $this->isActive() && $this->checkPermissionTo($permission);
+    }
+
+    /**
+     * Notifications are written in the account's own language, whatever the request's.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->locale->value;
     }
 
     public function needsPhone(): bool

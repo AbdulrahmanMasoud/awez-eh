@@ -24,6 +24,10 @@ return [
             'per_user_per_minute' => (int) env('AWEZ_API_RATE_LIMIT_PER_USER', 60),
             'per_ip_per_minute' => (int) env('AWEZ_API_RATE_LIMIT_PER_IP', 300),
         ],
+        // Asking a property owner's number (POST /api/v1/properties/{id}/contact).
+        'contact' => [
+            'per_user_per_hour' => (int) env('AWEZ_CONTACT_RATE_LIMIT_PER_HOUR', 30),
+        ],
     ],
 
     /*

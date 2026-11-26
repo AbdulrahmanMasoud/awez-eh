@@ -238,11 +238,12 @@ it('gives every foreign key the delete rule its data needs', function (): void {
 it('gives moderated tables the same moderation columns, starting at pending_review', function (string $table): void {
     $columns = catalog(
         'select column_name, data_type, is_nullable, column_default from information_schema.columns
-         where table_schema = ? and table_name = ? and column_name in (?, ?, ?, ?, ?) order by column_name',
-        ['public', $table, 'published_at', 'rejection_reason', 'reviewed_at', 'reviewed_by', 'status'],
+         where table_schema = ? and table_name = ? and column_name in (?, ?, ?, ?, ?, ?) order by column_name',
+        ['public', $table, 'changed_since_review', 'published_at', 'rejection_reason', 'reviewed_at', 'reviewed_by', 'status'],
     );
 
     expect($columns)->toBe([
+        ['column_name' => 'changed_since_review', 'data_type' => 'boolean', 'is_nullable' => 'NO', 'column_default' => 'false'],
         ['column_name' => 'published_at', 'data_type' => 'timestamp without time zone', 'is_nullable' => 'YES', 'column_default' => null],
         ['column_name' => 'rejection_reason', 'data_type' => 'text', 'is_nullable' => 'YES', 'column_default' => null],
         ['column_name' => 'reviewed_at', 'data_type' => 'timestamp without time zone', 'is_nullable' => 'YES', 'column_default' => null],
@@ -273,7 +274,14 @@ it('indexes what lists filter and sort by', function (string $table, array $expe
 })->with([
     'cities' => ['cities', ['slug unique']],
     'districts' => ['districts', ['city_id, slug unique', 'city_id, sort_order']],
-    'properties' => ['properties', ['purpose, type', 'district_id', 'price', 'city_id', 'user_id', 'location', 'search_text']],
+    'properties' => ['properties', [
+        'purpose, type', 'district_id', 'price', 'city_id', 'user_id', 'location', 'search_text',
+        // GET /api/v1/properties: published rows only (DECISIONS 107).
+        "id where status::text = 'published'::text", "price, id where status::text = 'published'::text",
+        "area_m2 where status::text = 'published'::text", "bedrooms where status::text = 'published'::text",
+        "finishing where status::text = 'published'::text", "furnished where status::text = 'published'::text",
+        "brokered where status::text = 'published'::text",
+    ]],
     'property_agreements' => ['property_agreements', ['property_id', 'created_by']],
     'trades' => ['trades', ['slug unique', 'is_active, sort_order']],
     'providers' => ['providers', ['user_id unique', 'city_id', 'district_id', 'verification', 'is_available', 'location', 'search_text']],
