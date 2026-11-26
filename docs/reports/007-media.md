@@ -97,14 +97,14 @@ None now; R2 waits for step 4.4. When it comes, in this order:
 
 ## Verification
 
-**`sail composer check`:** Pint, Rector and Larastan (max, no baseline, no ignores) pass. Pest passes 1,145 tests with 3,199 assertions. `main` had 1,065; this task adds 80 (datasets counted):
+**`sail composer check`:** Pint, Rector and Larastan (max, no baseline, no ignores) pass. Pest passes 1,147 tests with 3,211 assertions. `main` had 1,065; this task adds 82 (datasets counted):
 
-- `Media/ImageUploadTest` (19):
+- `Media/ImageUploadTest` (21):
     - each format stored as a clean JPEG with two WebP sizes;
     - GPS, camera and owner gone from the original and both sizes, read back with `exif_read_data`, and the photo turned upright (checked by its pixels);
     - the uploaded bytes and name not kept;
     - the original private and its guessed URL refused;
-    - sizes for a wide, a tall and a small image;
+    - sizes for a wide, a tall and a small image, and for two far over the cap (decoded at a reduced scale first);
     - transparency turned white;
     - refusals (renamed text, executable, SVG, HEIC, no file, over the size, damaged, huge canvas) with Arabic messages;
     - English messages on request.
@@ -187,6 +187,7 @@ None now; R2 waits for step 4.4. When it comes, in this order:
 - **The real-run photo was synthetic**, written with a phone's EXIF by the test helper; the brief asked for a real phone photo. Uploading one from a phone to the same endpoint would repeat the check on a real camera's EXIF (MakerNotes, XMP), which the cleaner strips the same way.
 - **The admin panel was checked by tests, not by hand:** the settings page, the field and the document button render and work in Livewire tests. A look at إعدادات الصور and an account's picture in the browser is worth a minute after the merge.
 - **Found on the way, not from this task:** `composer audit` reports five advisories in Symfony 8.1.10 and 8.1.11 (`http-kernel`, `mailer`, `routing`), fixed in 8.1.12. Raising them is a small `composer update symfony/http-kernel symfony/mailer symfony/routing` in its own PR.
+- **Found by CI:** libjpeg builds round a reduced-scale decode differently. CI's decoded a 4000×2000 photo at 2500×1250, just under the cap, and skipped the resize, while Sail's rounds up. The decoder is now asked for twice the target, so the resize always sets the exact size (DECISIONS 100's hint), and two tests cover it.
 - File deletions inside a transaction (account deletion, the cleanup) are not undone if the transaction rolls back; the rows would remain without files. This is rare and harmless for uploads, and is noted for when it matters.
 
 ## Deploy notes

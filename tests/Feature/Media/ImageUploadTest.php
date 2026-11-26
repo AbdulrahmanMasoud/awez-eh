@@ -142,6 +142,9 @@ it('makes each size at its width, never enlarged, and caps the original', functi
         ->and($size('large'))->toBe($large);
 })->with([
     'wide, over the long side' => [4000, 2000, [2560, 1280], [480, 240], [1600, 800]],
+    // Decoded at a reduced scale first (jpeg:size), then resized exactly.
+    'wide, far over the long side' => [7000, 3500, [2560, 1280], [480, 240], [1600, 800]],
+    'tall, far over the long side' => [3000, 6000, [1280, 2560], [480, 960], [1280, 2560]],
     'tall' => [1200, 2400, [1200, 2400], [480, 960], [1200, 2400]],
     'small' => [300, 200, [300, 200], [300, 200], [300, 200]],
 ]);

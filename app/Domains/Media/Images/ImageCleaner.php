@@ -81,10 +81,14 @@ final readonly class ImageCleaner
         $image = new Imagick;
         $scale = $this->config->integer('awez.media.max_long_side') / max($width, $height, 1);
 
-        // libjpeg can decode at a fraction of the size (1/8 steps): a 48 MP photo never sits in
-        // memory at full size. Only for a photo over the cap: below it, the hint would enlarge.
-        if ($decoder === 'JPEG' && $scale < 1) {
-            $image->setOption('jpeg:size', sprintf('%dx%d', (int) ceil($width * $scale), (int) ceil($height * $scale)));
+        // libjpeg can decode at a fraction of the size (n/8 steps): a 48 MP photo never sits in
+        // memory at full size. The hint is twice the target, because libjpeg builds differ on
+        // rounding to the step below or above it; the resize below then gives the exact size.
+        // A photo under twice the cap is decoded whole.
+        $hint = 2 * $scale;
+
+        if ($decoder === 'JPEG' && $hint < 1) {
+            $image->setOption('jpeg:size', sprintf('%dx%d', (int) ceil($width * $hint), (int) ceil($height * $hint)));
         }
 
         // The first frame only: an animated WebP becomes its first picture.
