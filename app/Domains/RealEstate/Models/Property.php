@@ -12,6 +12,9 @@ use App\Domains\Favorites\Models\Favorite;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Concerns\Moderated;
 use App\Domains\Moderation\Models\Concerns\Reportable;
@@ -43,7 +46,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 #[Fillable(['purpose', 'type', 'title', 'description', 'price', 'rent_period', 'area_m2', 'bedrooms', 'bathrooms', 'floor', 'furnished', 'finishing', 'city_id', 'district_id', 'address_note', 'location'])]
 #[UseFactory(PropertyFactory::class)]
 #[UsePolicy(PropertyPolicy::class)]
-final class Property extends Model
+final class Property extends Model implements HasMediaCollections
 {
     /** @use HasFactory<PropertyFactory> */
     use HasFactory;
@@ -51,6 +54,7 @@ final class Property extends Model
     use HasLocation;
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
     use Moderated;
     use Reportable;
 
@@ -153,6 +157,16 @@ final class Property extends Model
             || $this->favorites()->exists()
             || $this->featuredPlacements()->exists()
             || $this->reports()->exists();
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('photos');
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return ['photos' => $settings->property_photos];
     }
 
     /**

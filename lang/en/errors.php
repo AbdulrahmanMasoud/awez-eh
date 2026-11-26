@@ -19,4 +19,8 @@ return [
     'phone_taken' => 'This number is confirmed on another account.',
     'last_super_admin' => 'At least one super admin must remain.',
     'account_not_active' => 'That account is suspended or deleted. Reactivate it first.',
+    'unreadable_image' => 'We could not read this photo. Try another one.',
+    'image_too_large' => 'This photo is too large. Make it smaller and try again.',
+    'upload_not_available' => 'One of the photos is missing or has expired. Upload it again.',
+    'too_many_files' => 'This already has as many photos as it can hold.',
 ];

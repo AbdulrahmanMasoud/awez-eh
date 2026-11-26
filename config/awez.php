@@ -78,6 +78,33 @@ return [
     ],
 
     /*
+    | Photos and documents (spatie/laravel-medialibrary). Every collection takes its disk from here,
+    | so moving to Cloudflare R2 is `.env` only: MEDIA_DISK=r2 and MEDIA_PRIVATE_DISK=r2_private.
+    | Public files are served by URL; private ones (agreements' documents) only through a signed URL
+    | an admin asks for. Limits an admin may tune are in MediaSettings, not here.
+    */
+    'media' => [
+        'disk' => env('MEDIA_DISK', 'public'),
+        'private_disk' => env('MEDIA_PRIVATE_DISK', 'local'),
+        // The conversions run on their own queue, so a burst of uploads never delays notifications.
+        'queue' => 'media',
+        // The cleaned original: upright, no metadata, at most this many pixels on its long side.
+        'max_long_side' => 2560,
+        'jpeg_quality' => 85,
+        // Refused before decoding: a small file can declare a huge canvas (a decompression bomb).
+        // 120 megapixels lets a 108 MP phone photo through.
+        'max_pixels' => 120_000_000,
+        // Widths of the WebP conversions, never enlarged.
+        'conversions' => [
+            'thumb' => 480,
+            'large' => 1600,
+        ],
+        'webp_quality' => 80,
+        'pending_upload_hours' => 24,
+        'signed_url_minutes' => 5,
+    ],
+
+    /*
     | A signed-in request writes `last_seen_at` when the stored one is older than this.
     */
     'accounts' => [

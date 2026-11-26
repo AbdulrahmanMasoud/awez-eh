@@ -51,7 +51,7 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 | Commissions | `leads`, `commission_entries` |
 | Promotions | `featured_packages`, `featured_placements` |
 | CityGuide | `guide_entries`, `duty_pharmacies`, `news_items` |
-| Media | `media` (spatie/laravel-medialibrary) |
+| Media | `media` (spatie/laravel-medialibrary), `pending_uploads`, `settings` (spatie/laravel-settings, every domain's admin-tuned values) |
 
 ## 4. Identity and access
 
@@ -64,25 +64,34 @@ Added only when measured need appears (`docs/BUILD_PLAN.md`, Phase 6): Horizon, 
 - **Activity log:** every admin action is recorded (`activity_log`, log `admin`): who, what, which record, why, before and after, never personal data.
 - Ownership is enforced by Policies (ADR 0002). The account endpoints take no user id: they answer for the token's own account.
 
-## 5. Content lifecycle
+## 5. Photos and documents
+
+- **Cleaned before stored** (ADR 0007): every image is decoded and written again as JPEG, upright, without metadata (location, camera, names), at most 2560 px on its long side. JPEG, PNG and WebP are accepted by content; HEIC is not (no decoder in the container).
+- **Two sizes in WebP**, `thumb` (480 px wide) and `large` (1600 px), made on the `media` queue. They are a photo's only public URLs: its original stays on the private disk.
+- **Private documents** (agreements' scans) have no public form; an allowed admin opens one through a signed URL for 5 minutes, logged each time.
+- **Uploading ahead of the listing:** the app uploads to `POST /api/v1/uploads` (a pending upload, the uploader's for 24 hours), then sends the uploads' ids when it creates the listing; `AttachUploads` hands the files over in order, within the collection's limit. An hourly job deletes what was never attached.
+- **Storage** is configuration: the local disks now, Cloudflare R2 (`r2`, `r2_private`) when `.env` says so.
+- Collections and their limits are declared on each model (`InteractsWithMediaCollections`); the limits are `MediaSettings`, edited on إعدادات الصور.
+
+## 6. Content lifecycle
 
 `draft → pending_review → published → (paused | sold/rented | rejected | archived)`. Transitions are Actions in the owning domain; each writes an activity log entry. Only `published` rows are visible in public endpoints. Properties, providers, places and used items are moderated this way; requests are public as soon as they are written, while open and not expired, and reports handle abuse.
 
-## 6. Search and location
+## 7. Search and location
 
 - Text search goes through Scout with the database driver, on a `search_text` column per searchable table, normalized by `ArabicNormalizer` (`HasSearchText`), backed by a `pg_trgm` GIN index for typo tolerance. A term is compared with the text's words (`strict_word_similarity`), not with the whole text (DECISIONS 38 and 39).
 - Maps in the app use MapLibre with OpenStreetMap tiles from OpenFreeMap; residents pick a location by dropping a pin, so no paid geocoding is needed (ADR 0005).
 - Locations are `geography(Point, 4326)` with GiST indexes. "Near me" and urgent dispatch use `ST_DWithin` and order by `ST_Distance`.
 
-## 7. Commission protection
+## 8. Commission protection
 
 For a listing with `brokered = true`, the API never returns the owner's phone number, and the platform's staff answer its conversations and run its viewings: neither has a counterpart, so the owner never appears. Opening a chat or booking a viewing creates a `leads` row (resident, listing, channel, source) in the same transaction. Leads, booking events and commission entries are append-only: PostgreSQL triggers refuse every update and delete, and a correction is a new row that voids an earlier one. A property's commission is the sum of its entries, never a stored number.
 
-## 8. Notifications
+## 9. Notifications
 
 Laravel Notifications with the `database` and `fcm` channels; no SMS. Topics per city and district for broadcasts (the duty pharmacy, city news). Sending happens in queued jobs.
 
-## 9. API conventions
+## 10. API conventions
 
 - Base path `/api/v1`, JSON only (whatever the client sends as `Accept`), `Accept-Language: ar|en` with Arabic as the default, answered with `Content-Language`.
 - Errors: `{ "message": "...", "code": "snake_case_code", "errors": { "field": ["..."] } }`. The message is translated; models, ids, exception messages and traces never reach the client (`App\Http\ApiExceptionRenderer`).

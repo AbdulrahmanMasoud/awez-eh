@@ -103,7 +103,9 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 
 **Migrations.** Never edit a merged migration. Every migration has a working `down()`. `foreignUuid()->constrained()` with explicit `onDelete`.
 
-**Configuration.** `env()` only in `config/`, read with `config('awez.*')`. Values an admin may tune (limits, durations, prices of featured packages, commission rates) are `spatie/laravel-settings` classes in the owning domain, edited in Filament. Inject dependencies through constructors; facades are fine in framework glue.
+**Configuration.** `env()` only in `config/`, read with `config('awez.*')`. Values an admin may tune (limits, durations, prices of featured packages, commission rates) are `spatie/laravel-settings` classes in the owning domain's `Settings/`, listed in `config/settings.php`, with their defaults in a migration in `database/settings`. Each group is edited on its own Filament page behind a `View:<Page>` permission (`super_admin` by default), saved through an Action that logs the changed values (`AdminLog::recordSettings`); tests change them with `Settings::fake()`, never by writing the table (DECISIONS 104). Inject dependencies through constructors; facades are fine in framework glue.
+
+**Media.** Photos go through `AddImage` (cleaned first, ADR 0007) into a collection the model declares with `InteractsWithMediaCollections`, which takes its disks from `config('awez.media.*')`: never name a disk. The API shows a photo through `MediaResource` (its two sizes), never its original. Listings receive the app's uploads through `AttachUploads`.
 
 **Errors.** Domain errors extend `App\Exceptions\DomainException` (error code, translation key, HTTP status) and live in the domain's `Exceptions/`. Rendering is mapped once in `bootstrap/app.php`.
 
@@ -147,6 +149,7 @@ Dependency direction: **Http / Filament / Jobs → Actions → (Models, Support,
 - `App\Support` does not depend on `App\Domains`, `App\Http` or `App\Filament`.
 - Models live only in `App\Domains\*\Models`, are final, use `HasUuids` and declare their fillable attributes.
 - Every model whose table has a `user_id` or a `resident_id` has a policy.
+- No code outside `config/` names a disk for media; every model with media uses `HasMediaCollections` and `InteractsWithMediaCollections`; only the image cleaner touches Imagick.
 
 Feature tests in `tests/Feature/Database` read the schema: an index behind every foreign key, GiST on every geography column, GIN trigram on every `search_text`, enum `CHECK`s that match the PHP enums, the delete rule of every foreign key, and relationships on both sides of every foreign key.
 

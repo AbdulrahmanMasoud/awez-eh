@@ -25,6 +25,16 @@ final class AdminPermissions
 
     public const string ACTIVITY_LOG = 'View:ActivityLog';
 
+    /** إعدادات الصور: limits on photos and uploads (MediaSettings). */
+    public const string IMAGE_SETTINGS = 'View:ImageSettings';
+
+    /**
+     * Opening the scanned documents of brokerage agreements (signed URLs, each one logged). A
+     * custom permission in Shield's config until the agreements' own screen comes (step 2.2).
+     * Sales holds it by default: they bring the deals the agreements cover (DECISIONS 106).
+     */
+    public const string AGREEMENT_DOCUMENTS = 'ViewDocuments:PropertyAgreement';
+
     /**
      * @return list<string>
      */
@@ -35,6 +45,8 @@ final class AdminPermissions
             ...self::of('User', self::USER_ABILITIES),
             ...self::of('Role', self::ROLE_ABILITIES),
             self::ACTIVITY_LOG,
+            self::IMAGE_SETTINGS,
+            self::AGREEMENT_DOCUMENTS,
         ];
     }
 
@@ -50,7 +62,7 @@ final class AdminPermissions
             AdminRole::SuperAdmin => self::all(),
             AdminRole::Moderator => self::of('User', ['ViewAny', 'View', 'Suspend', 'Reactivate', 'RevealPhone']),
             AdminRole::DataEntry => self::referenceData(),
-            AdminRole::Sales => self::of('User', ['ViewAny', 'View']),
+            AdminRole::Sales => [...self::of('User', ['ViewAny', 'View']), self::AGREEMENT_DOCUMENTS],
         };
     }
 

@@ -66,6 +66,7 @@ return [
         'label' => 'مستخدم',
         'plural' => 'المستخدمين',
         'fields' => [
+            'avatar' => 'الصورة',
             'name' => 'الاسم',
             'phone' => 'الموبايل',
             'email' => 'الإيميل',
@@ -134,6 +135,8 @@ return [
         ],
         'system' => 'النظام',
         'events' => [
+            'settings_updated' => 'تعديل إعدادات',
+            'viewed_private_media' => 'فتح مستند خاص',
             'created' => 'إضافة',
             'updated' => 'تعديل',
             'deleted' => 'حذف',
@@ -145,6 +148,7 @@ return [
             'admin_promoted' => 'ترقية لأدمن',
         ],
         'subjects' => [
+            'media' => 'ملف',
             'user' => 'مستخدم',
             'city' => 'مدينة',
             'district' => 'منطقة',
@@ -176,5 +180,31 @@ return [
             'label' => 'إعلانات منشورة',
             'split' => ':properties عقار · :providers صنايعي · :places مكان · :used_items مستعمل',
         ],
+    ],
+    'image_settings' => [
+        'label' => 'إعدادات الصور',
+        'sections' => [
+            'uploads' => 'الرفع',
+            'collections' => 'أقصى عدد صور',
+        ],
+        'fields' => [
+            'max_file_size_mb' => 'أقصى حجم للصورة',
+            'uploads_per_hour' => 'عدد الرفعات في الساعة لكل حساب',
+            'property_photos' => 'صور العقار',
+            'agreement_documents' => 'مستندات عقد الوساطة',
+            'provider_work_photos' => 'صور شغل الصنايعي',
+            'place_photos' => 'صور المكان',
+            'used_item_photos' => 'صور المستعمل',
+            'request_photos' => 'صور الطلب',
+        ],
+        'megabytes' => 'ميجابايت',
+        'save' => 'حفظ',
+        'saved' => 'اتحفظت الإعدادات',
+    ],
+    'media' => [
+        'open_document' => 'فتح المستند',
+    ],
+    'settings_groups' => [
+        'media' => 'إعدادات الصور',
     ],
 ];

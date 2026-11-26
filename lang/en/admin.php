@@ -66,6 +66,7 @@ return [
         'label' => 'user',
         'plural' => 'Users',
         'fields' => [
+            'avatar' => 'Picture',
             'name' => 'Name',
             'phone' => 'Mobile',
             'email' => 'Email',
@@ -134,6 +135,8 @@ return [
         ],
         'system' => 'System',
         'events' => [
+            'settings_updated' => 'Settings changed',
+            'viewed_private_media' => 'Private document opened',
             'created' => 'Created',
             'updated' => 'Updated',
             'deleted' => 'Deleted',
@@ -145,6 +148,7 @@ return [
             'admin_promoted' => 'Promoted to admin',
         ],
         'subjects' => [
+            'media' => 'File',
             'user' => 'User',
             'city' => 'City',
             'district' => 'District',
@@ -176,5 +180,31 @@ return [
             'label' => 'Published listings',
             'split' => ':properties properties · :providers craftsmen · :places places · :used_items used items',
         ],
+    ],
+    'image_settings' => [
+        'label' => 'Image settings',
+        'sections' => [
+            'uploads' => 'Uploads',
+            'collections' => 'Most photos',
+        ],
+        'fields' => [
+            'max_file_size_mb' => 'Largest photo',
+            'uploads_per_hour' => 'Uploads per hour per account',
+            'property_photos' => 'Property photos',
+            'agreement_documents' => 'Brokerage agreement documents',
+            'provider_work_photos' => 'Provider work photos',
+            'place_photos' => 'Place photos',
+            'used_item_photos' => 'Used item photos',
+            'request_photos' => 'Request photos',
+        ],
+        'megabytes' => 'MB',
+        'save' => 'Save',
+        'saved' => 'Settings saved',
+    ],
+    'media' => [
+        'open_document' => 'Open document',
+    ],
+    'settings_groups' => [
+        'media' => 'Image settings',
     ],
 ];

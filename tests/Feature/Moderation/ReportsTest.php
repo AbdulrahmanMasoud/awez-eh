@@ -3,18 +3,24 @@
 declare(strict_types=1);
 
 use App\Domains\Bookings\Models\Booking;
+use App\Domains\CityGuide\Models\GuideEntry;
+use App\Domains\CityGuide\Models\NewsItem;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\Message;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
 use App\Domains\Marketplace\Models\UsedItem;
+use App\Domains\Media\Models\Media;
+use App\Domains\Media\Models\PendingUpload;
 use App\Domains\Moderation\Enums\ReportStatus;
 use App\Domains\Moderation\Models\Report;
 use App\Domains\Places\Models\OpeningHour;
 use App\Domains\Places\Models\Place;
 use App\Domains\Places\Models\PlaceCategory;
+use App\Domains\Places\Models\PlaceItem;
 use App\Domains\RealEstate\Models\Property;
+use App\Domains\RealEstate\Models\PropertyAgreement;
 use App\Domains\Requests\Models\RequestReply;
 use App\Domains\Requests\Models\ServiceRequest;
 use App\Domains\Reviews\Models\Review;
@@ -40,6 +46,12 @@ it('enforces a morph map with short names', function (): void {
             'message' => Message::class,
             'booking' => Booking::class,
             'review' => Review::class,
+            'property_agreement' => PropertyAgreement::class,
+            'place_item' => PlaceItem::class,
+            'guide_entry' => GuideEntry::class,
+            'news_item' => NewsItem::class,
+            'pending_upload' => PendingUpload::class,
+            'media' => Media::class,
             'city' => City::class,
             'district' => District::class,
             'trade' => Trade::class,

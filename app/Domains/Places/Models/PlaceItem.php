@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domains\Places\Models;
 
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Support\Casts\MoneyCast;
 use Database\Factories\PlaceItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,12 +21,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Fillable(['name', 'description', 'price', 'is_available', 'sort_order'])]
 #[UseFactory(PlaceItemFactory::class)]
-final class PlaceItem extends Model
+final class PlaceItem extends Model implements HasMediaCollections
 {
     /** @use HasFactory<PlaceItemFactory> */
     use HasFactory;
 
     use HasUuids;
+    use InteractsWithMediaCollections;
 
     /**
      * @return BelongsTo<Place, $this>
@@ -31,6 +35,16 @@ final class PlaceItem extends Model
     public function place(): BelongsTo
     {
         return $this->belongsTo(Place::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('photo')->singleFile();
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return [];
     }
 
     /**

@@ -8,6 +8,9 @@ use App\Domains\CityGuide\Models\DutyPharmacy;
 use App\Domains\Geography\Models\City;
 use App\Domains\Geography\Models\District;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Moderation\Enums\ContentStatus;
 use App\Domains\Moderation\Models\Concerns\Moderated;
 use App\Domains\Moderation\Models\Concerns\Reportable;
@@ -36,7 +39,7 @@ use Illuminate\Support\Facades\Config;
 #[Fillable(['place_category_id', 'name', 'description', 'phone', 'whatsapp', 'city_id', 'district_id', 'address_note', 'location', 'delivers'])]
 #[UseFactory(PlaceFactory::class)]
 #[UsePolicy(PlacePolicy::class)]
-final class Place extends Model
+final class Place extends Model implements HasMediaCollections
 {
     /** @use HasFactory<PlaceFactory> */
     use HasFactory;
@@ -44,6 +47,7 @@ final class Place extends Model
     use HasLocation;
     use HasSearchText;
     use HasUuids;
+    use InteractsWithMediaCollections;
     use Moderated;
     use Reportable;
 
@@ -121,6 +125,18 @@ final class Place extends Model
     public function isOpenAt(CarbonImmutable $moment): bool
     {
         return new OpeningHoursCalculator(Config::string('awez.display_timezone'))->isOpenAt($this->openingHours, $moment);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection('logo')->singleFile();
+        $this->addImageCollection('cover')->singleFile();
+        $this->addImageCollection('photos');
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return ['photos' => $settings->place_photos];
     }
 
     /**

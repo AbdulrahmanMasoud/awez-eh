@@ -15,6 +15,7 @@ The owner and Claude (on claude.ai) plan the work here. Claude Code carries it o
 | 004 | [Data model: interaction and business (BUILD_PLAN 1.3b)](004-interaction-data-model.md) | done   | #6  |
 | 005 | [Sign-in (BUILD_PLAN 1.4)](005-sign-in.md)                                     | done   | #8  |
 | 006 | [Admin panel foundation (BUILD_PLAN 1.5)](006-admin-panel-foundation.md)       | done   | #11 |
+| 007 | [Media (BUILD_PLAN 2.1)](007-media.md)                                         | review | #13 |
 
 The statuses are `planned` (no brief yet, do not start), `ready`, `in progress`, `review` (the PR is open and the report is written), `done` (merged) and `dropped`.
 

@@ -19,6 +19,10 @@ use App\Domains\Identity\Enums\UserLocale;
 use App\Domains\Identity\Enums\UserStatus;
 use App\Domains\Identity\Policies\UserPolicy;
 use App\Domains\Marketplace\Models\UsedItem;
+use App\Domains\Media\Concerns\InteractsWithMediaCollections;
+use App\Domains\Media\Contracts\HasMediaCollections;
+use App\Domains\Media\Models\PendingUpload;
+use App\Domains\Media\Settings\MediaSettings;
 use App\Domains\Moderation\Models\Report;
 use App\Domains\Places\Models\Place;
 use App\Domains\Promotions\Models\FeaturedPlacement;
@@ -60,7 +64,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 #[UsePolicy(UserPolicy::class)]
-final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
+final class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasMediaCollections
 {
     use HasApiTokens;
 
@@ -72,6 +76,7 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
     use HasUuids;
     use InteractsWithAppAuthentication;
     use InteractsWithAppAuthenticationRecovery;
+    use InteractsWithMediaCollections;
     use Notifiable;
 
     /**
@@ -415,6 +420,26 @@ final class User extends Authenticatable implements FilamentUser, HasAppAuthenti
     public function createdPropertyAgreements(): HasMany
     {
         return $this->hasMany(PropertyAgreement::class, 'created_by');
+    }
+
+    public const string AVATAR = 'avatar';
+
+    public function registerMediaCollections(): void
+    {
+        $this->addImageCollection(self::AVATAR)->singleFile();
+    }
+
+    /**
+     * @return HasMany<PendingUpload, $this>
+     */
+    public function pendingUploads(): HasMany
+    {
+        return $this->hasMany(PendingUpload::class);
+    }
+
+    protected function collectionLimits(MediaSettings $settings): array
+    {
+        return [];
     }
 
     /**

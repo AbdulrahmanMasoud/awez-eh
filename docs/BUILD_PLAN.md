@@ -92,7 +92,21 @@ Tick a box only after its verification has been run and passed. A step without a
 
 ## Phase 2 — The first version (what residents need on launch day)
 
-- [ ] **2.1 Media.** Image upload to R2 with two sizes through `spatie/laravel-medialibrary`.
+- [x] **2.1 Media.** Image upload with two sizes through `spatie/laravel-medialibrary`, on the local disks until R2. (task 007)
+    - Acceptance:
+        - Packages (owner's approval): `spatie/laravel-medialibrary`, `league/flysystem-aws-s3-v3`, `spatie/laravel-settings`, and Filament's media library plugin for the panel's field and column.
+        - Storage: public files on `config('awez.media.disk')` (`MEDIA_DISK`, default `public`), private ones on `config('awez.media.private_disk')` (`MEDIA_PRIVATE_DISK`, default `local`). Two R2 disks (`r2`, `r2_private`) on the `s3` driver, used only when `.env` names them. No code outside `config/` names a disk for media (arch test).
+        - Images in: JPEG, PNG and WebP, checked by content, up to the settings' size (10 MB). HEIC only if the container's image library decodes it (it does not: no HEVC decoder; the app sends JPEG). Before anything is stored, the image is decoded, turned upright from its EXIF orientation, scaled to at most 2560 px on its long side and written again as JPEG with no metadata (EXIF, GPS, camera, names); the uploaded bytes are never kept. Width and height are stored.
+        - Two WebP conversions on the `media` queue, Medialibrary's own job: `thumb` (480 px wide) and `large` (1600 px wide), never enlarged; running the job twice gives the same files. Public URLs only for the conversions, never for the original, which stays on the private disk (DECISIONS 99).
+        - Collections, each declared on its model with its count from the settings and an order: property photos (20), agreement documents (5, PDF or image, private), provider avatar (1) and work (30), place logo (1), cover (1) and photos (20), place item photo (1), used item photos (10), request photos (3), user avatar (1), guide entry and news item image (1). `media` in the morph map; `Media` in `App\Domains\Media`.
+        - Private files: no public URL; an admin allowed to see them gets a signed URL for 5 minutes through the panel, and each one writes an activity entry.
+        - API: `POST /api/v1/uploads` (multipart `file`) stores a pending upload owned by the user for 24 hours and answers with the media's shape (`id`, `thumb_url`, `large_url`, `width`, `height`, `processing`); `GET` and `DELETE /api/v1/uploads/{id}` for its owner only. `PUT` and `DELETE /api/v1/me/avatar`; the account's avatar is the uploaded one, else the provider's picture. Uploads are limited per user per hour (settings, 60). Deleting an account deletes its avatar and pending uploads.
+        - `AttachUploads` moves a user's unexpired uploads to a model's collection in the given order, within the collection's count, all or nothing, and deletes the pending uploads.
+        - An hourly job deletes expired pending uploads with their files (`chunkById`), idempotent.
+        - Panel: the account page shows the uploaded avatar; a reusable image field and column for a collection (thumbnails, drag to reorder, remove); the signed URL action for private documents.
+        - Settings (`spatie/laravel-settings`): `MediaSettings` (file size, count per collection, uploads per hour) with defaults in a settings migration, edited on إعدادات الصور under النظام by `super_admin`, each change in the activity log.
+        - Tests: every format accepted and refused (renamed text, executable, SVG, HEIC, over the size) with Arabic messages; the GPS and camera EXIF gone from the original and the conversions, upright; conversion sizes for a wide, a tall and a small image; the pending-upload flow and ownership; `AttachUploads` (too many, someone else's, expired, order, all or nothing); the avatar and its fallback; private documents and the signed URL's expiry; the disk switch to a faked `r2`; the cleanup job twice; the settings page and its log.
+    - Verify: `sail composer check` green with the test counts; on `testing`, `migrate:fresh --seed`, rollback of the step's migrations and migrate again; a real run on the dev stack: `curl` upload of a photo carrying GPS with a fake sign-in token, polling until processed, both URLs opened with their sizes, the EXIF before and after, attaching it to a demo property through `AttachUploads` in `tinker`, and an expired upload removed by the cleanup.
 - [ ] **2.2 Real estate API.** Listing, filters, sort, detail, create and edit by owner, moderation in Filament, brokered listings that hide the owner's number.
 - [ ] **2.3 Services API.** Providers by trade, rating and availability; profile with prices and work photos; verification in Filament.
 - [ ] **2.4 Places API.** Restaurants, shops, pharmacies; items, offers, opening hours, "open now".
@@ -117,7 +131,7 @@ Tick a box only after its verification has been run and passed. A step without a
 - [ ] **4.2 Craftsman mode** (availability, accepting urgent jobs).
 - [ ] **4.3 Commissions** in Filament: agreements, leads per listing, commission entries.
 - [ ] **4.3b Phone confirmation by WhatsApp**: the resident sends a pre-filled code to our WhatsApp number; the webhook confirms the number (ADR 0003).
-- [ ] **4.4 Production**: Dockerfile, deployment, backups, error tracking (Sentry), API docs published.
+- [ ] **4.4 Production**: Dockerfile, deployment, backups, error tracking (Sentry), API docs published. Media on R2 (DECISIONS 99): the two buckets, the public one's domain and CORS, `MEDIA_DISK=r2` and `MEDIA_PRIVATE_DISK=r2_private`, one real upload checked end to end, and a queue worker that listens to `media`. The image has Imagick (HEIC only with libheif's HEVC plugin, OPEN_QUESTIONS 8) and PHP's upload limits above `MediaSettings`' file size.
 
 ## Phase 5 — Growth (after launch)
 
